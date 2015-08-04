@@ -1,6 +1,7 @@
 package sorazodia.survival.mechanics;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -12,11 +13,15 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
+import net.minecraft.network.play.server.S32PacketConfirmTransaction;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.FoodStats;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -31,7 +36,6 @@ public class PlayerActionEvent
 		if (hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
 		{
 			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
-			float damage = hurtEvent.ammount;
 
 			if (player.getItemInUse() != null && player.getItemInUse().getItem() instanceof ItemSword)
 			{
@@ -46,10 +50,32 @@ public class PlayerActionEvent
 					player.setSneaking(false);
 				}
 			}
-
-			System.out.println(damage);
-			System.out.println(hurtEvent.ammount);
 		}
+	}
+
+	@SubscribeEvent
+	public void bowDraw(ArrowLooseEvent arrowEvent)
+	{
+		int temp = arrowEvent.charge;
+		
+		if (arrowEvent.entityLiving.getActivePotionEffect(Potion.damageBoost) != null)
+		{
+			PotionEffect strength = arrowEvent.entityLiving.getActivePotionEffect(Potion.damageBoost);			
+			
+			arrowEvent.charge *= (1.30 * (strength.getAmplifier() + 1));
+		}
+		if (arrowEvent.entityLiving.getActivePotionEffect(Potion.weakness) != null)
+		{
+			PotionEffect weakness = arrowEvent.entityLiving.getActivePotionEffect(Potion.weakness);
+			double reduction = arrowEvent.charge * (0.5 * (weakness.getAmplifier() + 1));
+			
+			arrowEvent.charge -= reduction;
+		}
+		else
+		{
+			arrowEvent.charge = temp;
+		}
+			
 	}
 
 	@SubscribeEvent
@@ -93,10 +119,10 @@ public class PlayerActionEvent
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		ItemStack toPlace = player.inventory.getStackInSlot((heldItemIndex + 1) % 9);
-		
+
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
-				toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
-		
+			toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
+
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			ItemBlock block = (ItemBlock) toPlace.getItem();
@@ -110,7 +136,18 @@ public class PlayerActionEvent
 					x += offset.offsetX;
 					y += offset.offsetY;
 					z += offset.offsetZ;
-					block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+					
+					System.out.println("x " + x);
+					System.out.println("z " + z);
+					System.out.println("y " + y);
+					
+					System.out.println("Player x " + (int)player.posX);
+					System.out.println("Player z " + (int)player.posZ);
+					System.out.println("Player y " + (int)player.posY); //distance format
+					
+					if (canPlace(x, y, z, (int)player.posX, (int)player.posY, (int)player.posZ))
+						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+
 				} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem))
 				{
 					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
@@ -120,7 +157,7 @@ public class PlayerActionEvent
 						heldItem.damageItem(1, player);
 				}
 			}
-			
+
 			if (!player.capabilities.isCreativeMode)
 				inventory.consumeInventoryItem(toPlace.getItem());
 		}
@@ -158,6 +195,25 @@ public class PlayerActionEvent
 			inventory.setInventorySlotContents(heldItemIndex, equipedArmor);
 
 		player.playSound("mob.irongolem.throw", 1.0F, 1.0F);
+		
+		Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
+	}
+	
+	private boolean canPlace(int targetX, int targetY, int targetZ, int currentX, int currentY, int currentZ)
+	{
+		boolean noCollision = false;
+		
+		if ((targetX != currentX || targetZ != currentZ) && targetY != currentY) //checks if the player is not in the general x, y, z area
+			noCollision = true;
+		
+		if ((targetX != currentX || targetZ != currentZ) && targetY == currentY) //checks if the player is not in the x or z row/column
+			noCollision = true;
+		
+		//if ((targetX == currentX || targetZ == currentZ) && (targetY != currentY && targetY != currentY + 1)) //checks if the player's body won't be inside the block
+		if ((targetX == currentX || targetZ == currentZ) && targetY != currentY + 1) //checks if the player's head won't be inside the block
+			noCollision = true;
+		
+		return noCollision;
 	}
 
 }
