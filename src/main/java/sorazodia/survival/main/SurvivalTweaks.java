@@ -22,7 +22,7 @@ public class SurvivalTweaks
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
-		if (!Loader.isModLoaded("Mystcraft"))
+		if (!Loader.isModLoaded("Mystcraft") || !Loader.isModLoaded("rftools"))
 			preServerEvent.registerServerCommand(new CommandDimensionTeleport());
 	}
 

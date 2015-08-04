@@ -119,6 +119,7 @@ public class PlayerActionEvent
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		ItemStack toPlace = player.inventory.getStackInSlot((heldItemIndex + 1) % 9);
+		boolean blockPlaced = false;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
 			toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
@@ -137,28 +138,24 @@ public class PlayerActionEvent
 					y += offset.offsetY;
 					z += offset.offsetZ;
 					
-					System.out.println("x " + x);
-					System.out.println("z " + z);
-					System.out.println("y " + y);
-					
-					System.out.println("Player x " + (int)player.posX);
-					System.out.println("Player z " + (int)player.posZ);
-					System.out.println("Player y " + (int)player.posY); //distance format
-					
 					if (canPlace(x, y, z, (int)player.posX, (int)player.posY, (int)player.posZ))
+					{
 						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+						blockPlaced = true;
+					}
 
 				} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem))
 				{
 					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
 					block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
-
+					blockPlaced = true;
+					
 					if (!player.capabilities.isCreativeMode)
 						heldItem.damageItem(1, player);
 				}
 			}
 
-			if (!player.capabilities.isCreativeMode)
+			if (!player.capabilities.isCreativeMode && blockPlaced)
 				inventory.consumeInventoryItem(toPlace.getItem());
 		}
 
