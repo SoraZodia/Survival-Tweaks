@@ -10,8 +10,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
+import sorazodia.survival.main.SurvivalTweaks;
 import sorazodia.survival.teleport.InterDimTeleporter;
 
 import com.mojang.authlib.GameProfile;
@@ -35,7 +37,7 @@ public class CommandDimensionTeleport extends CommandBase
 	@Override
 	public String getCommandUsage(ICommandSender sender)
 	{
-		String message = "Invalid Arguments";
+		String message = StatCollector.translateToLocal("survivaltweaks.invalid.argument");
 		printUsage(sender);
 		return message;
 	}
@@ -57,13 +59,13 @@ public class CommandDimensionTeleport extends CommandBase
 				sender.addChatMessage(new ChatComponentText(print));
 				break;
 			}
-			
-			if(!isInteger(args[0]) || !DimensionManager.isDimensionRegistered(Integer.parseInt(args[0])))
+
+			if (!SurvivalTweaks.isInteger(args[0]) || !DimensionManager.isDimensionRegistered(Integer.parseInt(args[0])))
 			{
-				sender.addChatMessage(new ChatComponentTranslation("Invaild ID or Dimension don't exist"));
+				sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.dimension"));
 				break;
 			}
-			
+
 			targetDimension = Integer.parseInt(args[0]);
 			worldServer = mcServer.worldServerForDimension(targetDimension);
 			player = CommandDimensionTeleport.getCommandSenderAsPlayer(sender);
@@ -74,9 +76,9 @@ public class CommandDimensionTeleport extends CommandBase
 			player = CommandDimensionTeleport.getPlayer(sender, args[0]);
 
 			if (player == null)
-				sender.addChatMessage(new ChatComponentTranslation("Player Not Found"));
+				sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.player"));
 
-			if (isInteger(args[1]))
+			if (SurvivalTweaks.isInteger(args[1]))
 			{
 				targetDimension = Integer.parseInt(args[1]);
 				worldServer = mcServer.worldServerForDimension(targetDimension);
@@ -88,7 +90,7 @@ public class CommandDimensionTeleport extends CommandBase
 
 				if (targetPlayer == null)
 				{
-					sender.addChatMessage(new ChatComponentTranslation("Player Not Found"));
+					sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.player"));
 					break;
 				}
 
@@ -104,105 +106,81 @@ public class CommandDimensionTeleport extends CommandBase
 		}
 
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args)
-    {
-        ServerConfigurationManager manager = MinecraftServer.getServer().getConfigurationManager();
-        
-        if (args.length >= 1)
-        {
-        	String lastLetter = args[args.length - 1];
-        	ArrayList<String> playerList = new ArrayList<>();
-        	GameProfile[] profiles = MinecraftServer.getServer().func_152357_F();
-        	
-        	for (int x = 0; x < profiles.length; x++)
-        	{
-        		if (manager.func_152596_g(profiles[x]) && doesStringStartWith(lastLetter, profiles[x].getName()))
-                {
-        			playerList.add(profiles[x].getName());
-                }
-        	}
-        	
-        	return playerList;
-        }
-        
-        return null;
-    }
+	{
+		ServerConfigurationManager manager = MinecraftServer.getServer().getConfigurationManager();
+
+		if (args.length >= 1)
+		{
+			String lastLetter = args[args.length - 1];
+			ArrayList<String> playerList = new ArrayList<>();
+			GameProfile[] profiles = MinecraftServer.getServer().func_152357_F();
+
+			for (int x = 0; x < profiles.length; x++)
+			{
+				if (manager.func_152596_g(profiles[x]) && doesStringStartWith(lastLetter, profiles[x].getName()))
+				{
+					playerList.add(profiles[x].getName());
+				}
+			}
+
+			return playerList;
+		}
+
+		return null;
+	}
 
 	private String listIDs(EntityPlayerMP player)
 	{
-	   StringBuilder str = new StringBuilder();
-	   Integer[] ids = DimensionManager.getIDs();
-	   int currectDimension = player.dimension;
-	   String name;
-	   String message;
-	   
-	   for(int x = 0; x < ids.length; x++)
-	   {
-		if (ids[x] != currectDimension)
-	       message = (" [%i: %s] ");
-		else
-			message = (" [%i: %s (You Are Here)] ");
-		
-		name = DimensionManager.getProvider(ids[x]).getDimensionName();
-		message = message.replace("%i", ids[x].toString());
-		message = message.replace("%s", name);
-		
-		str.append(message);
-	   }
-	   
-	   return str.toString().trim();
+		StringBuilder str = new StringBuilder();
+		Integer[] ids = DimensionManager.getIDs();
+		int currectDimension = player.dimension;
+		String name;
+		String message;
+
+		for (int x = 0; x < ids.length; x++)
+		{
+			if (ids[x] != currectDimension)
+				message = (" [%i: %s] ");
+			else
+				message = (" [%i: %s" + "(" + StatCollector.translateToLocal("survivaltweaks.command.tpd.list.here") + ")] ");
+
+			name = DimensionManager.getProvider(ids[x]).getDimensionName();
+			message = message.replace("%i", ids[x].toString());
+			message = message.replace("%s", name);
+
+			str.append(message);
+		}
+
+		return str.toString().trim();
 	}
 
 	private void printUsage(ICommandSender sender)
 	{
-		sender.addChatMessage(new ChatComponentTranslation("Usage:"));
-		sender.addChatMessage(new ChatComponentTranslation("/tpd list - List the dimension ids, name, and the one you are currectly in"));
-		sender.addChatMessage(new ChatComponentTranslation("/tpd <Dimension Id> - Teleports you to that dimension"));
-		sender.addChatMessage(new ChatComponentTranslation("/tpd <Player Name> <Dimension Id> - Teleport that player to that dimension"));
-		sender.addChatMessage(new ChatComponentTranslation("/tpd <First Player Name> <Second Player Name> - Teleport the first player to the second player, regardless of thier current dimension"));
-	}
-
-	// Thank you StackOverflow
-	private boolean isInteger(String arg)
-	{
-		if (arg == null)
-			return false;
-
-		int length = arg.length();
-
-		if (length == 0)
-			return false;
-
-		int x = 0;
-
-		if (arg.charAt(0) == '-')
-		{
-			if (length == 1)
-				return false;
-			x = 1;
-		}
-
-		for (; x < length; x++)
-		{
-			char c = arg.charAt(x);
-			if (c <= '/' || c >= ':')
-				return false;
-		}
-
-		return true;
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.useage"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.list"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2id"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2p"));
 	}
 
 	private void tranferToDimension(EntityPlayerMP player, EntityPlayerMP targetPlayer, WorldServer worldServer, int currentDimensionID, int targetDimensionID, double x, double z)
 	{
-		if (targetDimensionID == currentDimensionID && player.equals(targetPlayer))
+		if (targetDimensionID == currentDimensionID)
 		{
-			player.addChatMessage(new ChatComponentTranslation("You are already in that dimension... No whoosh for you"));
+			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.nowhoosh"));
 			return;
 		}
-
+		
+		if (player.equals(targetPlayer))
+		{
+			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.sameplayer"));
+			return;
+		}
+		
 		mcServer.getConfigurationManager().transferPlayerToDimension(player, targetDimensionID, new InterDimTeleporter(worldServer, x, z));
 
 		if (currentDimensionID == 1)

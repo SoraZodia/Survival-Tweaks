@@ -1,0 +1,16 @@
+survivaltweaks.invalid.potion=The following potion IDs is invalid: %s
+survivaltweaks.config=Effects Cleared by Bed
+survivaltweaks.config.description=Effects with these IDs will be cleared when the player sleeps
+
+survivaltweaks.invalid.argument=Invalid Arguments
+survivaltweaks.invalid.dimension=Invaild ID or Dimension don't exist
+survivaltweaks.invalid.player=Player Not Found
+survivaltweaks.invalid.nowhoosh=You are already in that dimension... No whoosh for you
+
+survivaltweaks.command.useage=Usage:
+survivaltweaks.command.tpd.list=/tpd list - List the dimension ids, name, and the one you are currectly in
+survivaltweaks.command.tpd.id=/tpd <Dimension Id> - Teleports you to that dimension
+survivaltweaks.command.tpd.p2id=/tpd <Player Name> <Dimension Id> - Teleport that player to that dimension
+survivaltweaks.command.tpd.p2p=/tpd <First Player Name> <Second Player Name> - Teleport the first player to the second player, regardless of thier current dimension
+survivaltweaks.command.tpd.list.here=You Are Here
+survivaltweaks.command.tpd.sameplayer=No Teleception for you!... I'll take my leave now

@@ -3,9 +3,12 @@ package sorazodia.survival.mechanics;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
@@ -18,12 +21,14 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.FoodStats;
+import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import sorazodia.survival.config.ConfigHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -56,26 +61,7 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
-		int temp = arrowEvent.charge;
-		
-		if (arrowEvent.entityLiving.getActivePotionEffect(Potion.damageBoost) != null)
-		{
-			PotionEffect strength = arrowEvent.entityLiving.getActivePotionEffect(Potion.damageBoost);			
-			
-			arrowEvent.charge *= (1.30 * (strength.getAmplifier() + 1));
-		}
-		if (arrowEvent.entityLiving.getActivePotionEffect(Potion.weakness) != null)
-		{
-			PotionEffect weakness = arrowEvent.entityLiving.getActivePotionEffect(Potion.weakness);
-			double reduction = arrowEvent.charge * (0.5 * (weakness.getAmplifier() + 1));
-			
-			arrowEvent.charge -= reduction;
-		}
-		else
-		{
-			arrowEvent.charge = temp;
-		}
-			
+		arrowEvent.charge = (int) calculateDamage(arrowEvent.charge, arrowEvent.entityLiving);
 	}
 
 	@SubscribeEvent
@@ -83,11 +69,19 @@ public class PlayerActionEvent
 	{
 		EntityPlayer player = tickEvent.player;
 		FoodStats hunger = player.getFoodStats();
+		
 		if (player.isPlayerFullyAsleep())
 		{
 			player.heal(20F);
 			hunger.setFoodLevel(hunger.getFoodLevel() - 5);
 			player.curePotionEffects(new ItemStack(Items.milk_bucket));
+			
+			for(int id : ConfigHandler.getPotionIDs())
+			{
+				if (player.isPotionActive(id))
+					player.removePotionEffect(id);
+			}
+			
 		}
 
 	}
@@ -97,19 +91,26 @@ public class PlayerActionEvent
 	{
 		EntityPlayer player = useEvent.entityPlayer;
 
-		if (player.getCurrentEquippedItem() != null)
+		if (player.getCurrentEquippedItem() != null && useEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
+			World world = useEvent.world;
 
 			if (heldItem instanceof ItemArmor)
 				switchArmor(player, heldStack);
 
 			if (heldItem == Items.arrow)
-				throwArrow(useEvent.world, player, heldStack);
+				throwArrow(world, player, heldStack);
+
+			if (heldItem == Items.ender_pearl)
+				throwPearl(world, player, heldStack);
+
+			if (heldItem == Items.ender_eye)
+				teleportToStronghold(useEvent.world, player);
 
 			if (heldItem instanceof ItemTool && useEvent.action == Action.RIGHT_CLICK_BLOCK)
-				placeBlocks(useEvent.world, player, heldStack, useEvent.x, useEvent.y, useEvent.z, useEvent.face);
+				placeBlocks(world, player, heldStack, useEvent.x, useEvent.y, useEvent.z, useEvent.face);
 		}
 
 	}
@@ -130,6 +131,9 @@ public class PlayerActionEvent
 			ForgeDirection offset = ForgeDirection.getOrientation(face);
 			Block targetBlock = world.getBlock(x, y, z);
 
+			if (targetBlock == Blocks.bedrock)
+				return;
+			
 			if (!world.isRemote)
 			{
 				if (!player.isSneaking())
@@ -137,8 +141,8 @@ public class PlayerActionEvent
 					x += offset.offsetX;
 					y += offset.offsetY;
 					z += offset.offsetZ;
-					
-					if (canPlace(x, y, z, (int)player.posX, (int)player.posY, (int)player.posZ))
+
+					if (canPlace(x, y, z, (int) player.posX, (int) player.posY, (int) player.posZ))
 					{
 						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 						blockPlaced = true;
@@ -149,7 +153,7 @@ public class PlayerActionEvent
 					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
 					block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 					blockPlaced = true;
-					
+
 					if (!player.capabilities.isCreativeMode)
 						heldItem.damageItem(1, player);
 				}
@@ -161,13 +165,42 @@ public class PlayerActionEvent
 
 	}
 
+	private void teleportToStronghold(World world, EntityPlayer player)
+	{
+		if (!player.capabilities.isCreativeMode || !player.isSneaking())
+			return;
+
+		ChunkPosition nearestStrongHold = world.findClosestStructure("Stronghold", (int) player.posX, (int) player.posY, (int) player.posZ);
+
+		if (!world.isRemote)
+		{
+			//rerun so player won't be inside a wall
+			nearestStrongHold = world.findClosestStructure("Stronghold", nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ); 
+			player.setPositionAndUpdate(nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ);
+		}
+	}
+
+	private void throwPearl(World world, EntityPlayer player, ItemStack heldItem)
+	{
+		if (!player.capabilities.isCreativeMode)
+			return;
+
+		world.playSoundAtEntity(player, "random.bow", 0.5F, (0.4F / ((float) Math.random() * 0.4F + 0.8F)));
+
+		if (!world.isRemote)
+			world.spawnEntityInWorld(new EntityEnderPearl(world, player));
+	}
+
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{
 		if (!player.capabilities.isCreativeMode)
 			heldItem.stackSize--;
 
-		EntityArrow arrow = new EntityArrow(world, player, 0.5F);
-		arrow.setDamage(4);
+		double damage = calculateDamage(4.0, player);
+		//damage = (Math.pow(damage, 2) + damage * 2.0) / 20.0;
+		
+		EntityArrow arrow = new EntityArrow(world, player, (float) calculateDamage(0.5, player));
+		arrow.setDamage(damage);
 
 		player.swingItem();
 
@@ -192,25 +225,44 @@ public class PlayerActionEvent
 			inventory.setInventorySlotContents(heldItemIndex, equipedArmor);
 
 		player.playSound("mob.irongolem.throw", 1.0F, 1.0F);
-		
+
 		Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
 	}
-	
+
 	private boolean canPlace(int targetX, int targetY, int targetZ, int currentX, int currentY, int currentZ)
 	{
 		boolean noCollision = false;
-		
+
 		if ((targetX != currentX || targetZ != currentZ) && targetY != currentY) //checks if the player is not in the general x, y, z area
 			noCollision = true;
-		
+
 		if ((targetX != currentX || targetZ != currentZ) && targetY == currentY) //checks if the player is not in the x or z row/column
 			noCollision = true;
-		
+
 		//if ((targetX == currentX || targetZ == currentZ) && (targetY != currentY && targetY != currentY + 1)) //checks if the player's body won't be inside the block
 		if ((targetX == currentX || targetZ == currentZ) && targetY != currentY + 1) //checks if the player's head won't be inside the block
 			noCollision = true;
-		
+
 		return noCollision;
+	}
+	
+	private double calculateDamage(double damage, EntityLivingBase entity)
+	{
+		if (entity.getActivePotionEffect(Potion.damageBoost) != null)
+		{
+			PotionEffect strength = entity.getActivePotionEffect(Potion.damageBoost);
+
+			damage *= (1.30 * (strength.getAmplifier() + 1));
+		}
+		if (entity.getActivePotionEffect(Potion.weakness) != null)
+		{
+			PotionEffect weakness = entity.getActivePotionEffect(Potion.weakness);
+			double reduction = damage * (0.5 * (weakness.getAmplifier() + 1));
+
+			damage -= reduction;
+		} 
+
+		return damage;
 	}
 
 }
