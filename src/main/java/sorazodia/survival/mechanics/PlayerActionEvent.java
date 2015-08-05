@@ -2,6 +2,7 @@ package sorazodia.survival.mechanics;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityEnderPearl;
@@ -130,9 +131,6 @@ public class PlayerActionEvent
 			ItemBlock block = (ItemBlock) toPlace.getItem();
 			ForgeDirection offset = ForgeDirection.getOrientation(face);
 			Block targetBlock = world.getBlock(x, y, z);
-
-			if (targetBlock == Blocks.bedrock)
-				return;
 			
 			if (!world.isRemote)
 			{
@@ -146,19 +144,26 @@ public class PlayerActionEvent
 					{
 						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 						blockPlaced = true;
+						world.playSoundAtEntity(player, "dig.stone", getVolume(), getVolume());
+						
 					}
 
 				} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem))
 				{
+					if (targetBlock == Blocks.bedrock)
+						return;
+					
 					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
 					block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 					blockPlaced = true;
-
+					world.playSoundAtEntity(player, "dig.stone", getVolume(), getVolume());
+					
 					if (!player.capabilities.isCreativeMode)
 						heldItem.damageItem(1, player);
 				}
 			}
 
+			
 			if (!player.capabilities.isCreativeMode && blockPlaced)
 				inventory.consumeInventoryItem(toPlace.getItem());
 		}
@@ -185,7 +190,7 @@ public class PlayerActionEvent
 		if (!player.capabilities.isCreativeMode)
 			return;
 
-		world.playSoundAtEntity(player, "random.bow", 0.5F, (0.4F / ((float) Math.random() * 0.4F + 0.8F)));
+		world.playSoundAtEntity(player, "random.bow", getVolume(), getVolume());
 
 		if (!world.isRemote)
 			world.spawnEntityInWorld(new EntityEnderPearl(world, player));
@@ -203,7 +208,8 @@ public class PlayerActionEvent
 		arrow.setDamage(damage);
 
 		player.swingItem();
-
+		world.playSoundAtEntity(player, "random.bow", getVolume(), getVolume());
+		
 		if (!world.isRemote)
 			world.spawnEntityInWorld(arrow);
 	}
@@ -224,7 +230,7 @@ public class PlayerActionEvent
 		if (!player.capabilities.isCreativeMode)
 			inventory.setInventorySlotContents(heldItemIndex, equipedArmor);
 
-		player.playSound("mob.irongolem.throw", 1.0F, 1.0F);
+		player.playSound("mob.irongolem.throw", getVolume(), getVolume());
 
 		Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
 	}
@@ -239,8 +245,8 @@ public class PlayerActionEvent
 		if ((targetX != currentX || targetZ != currentZ) && targetY == currentY) //checks if the player is not in the x or z row/column
 			noCollision = true;
 
-		//if ((targetX == currentX || targetZ == currentZ) && (targetY != currentY && targetY != currentY + 1)) //checks if the player's body won't be inside the block
-		if ((targetX == currentX || targetZ == currentZ) && targetY != currentY + 1) //checks if the player's head won't be inside the block
+		if ((targetX == currentX || targetZ == currentZ) && (targetY != currentY && targetY != currentY + 1)) //checks if the player's body won't be inside the block
+		//if ((targetX == currentX || targetZ == currentZ) && targetY != currentY + 1) //checks if the player's head won't be inside the block
 			noCollision = true;
 
 		return noCollision;
@@ -263,6 +269,11 @@ public class PlayerActionEvent
 		} 
 
 		return damage;
+	}
+	
+	private float getVolume()
+	{
+		return Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
 	}
 
 }
