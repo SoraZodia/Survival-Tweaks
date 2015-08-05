@@ -16,7 +16,7 @@ public class EntityTickEvent
 		
 		if (player.getActivePotionEffect(Potion.jump) != null)
 		{
-			player.stepHeight = player.getActivePotionEffect(Potion.jump).getAmplifier() + 1;	
+			player.stepHeight += player.getActivePotionEffect(Potion.jump).getAmplifier() + 1;	
 		}
 
 	}
