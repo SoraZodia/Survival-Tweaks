@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -60,11 +61,8 @@ public class CommandDimensionTeleport extends CommandBase
 				break;
 			}
 
-			if (!SurvivalTweaks.isInteger(args[0]) || !DimensionManager.isDimensionRegistered(Integer.parseInt(args[0])))
-			{
-				sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.dimension"));
+			if (!checkDimension(sender, args[0]))
 				break;
-			}
 
 			targetDimension = Integer.parseInt(args[0]);
 			worldServer = mcServer.worldServerForDimension(targetDimension);
@@ -75,11 +73,14 @@ public class CommandDimensionTeleport extends CommandBase
 		case 2:
 			player = CommandDimensionTeleport.getPlayer(sender, args[0]);
 
-			if (player == null)
-				sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.player"));
+			if (checkPlayer(sender, player) == false)
+				break;
 
 			if (SurvivalTweaks.isInteger(args[1]))
 			{
+				if (!checkDimension(sender, args[1]))
+					break;
+
 				targetDimension = Integer.parseInt(args[1]);
 				worldServer = mcServer.worldServerForDimension(targetDimension);
 
@@ -97,8 +98,62 @@ public class CommandDimensionTeleport extends CommandBase
 				targetDimension = targetPlayer.dimension;
 				worldServer = mcServer.worldServerForDimension(targetDimension);
 
-				tranferToDimension(player, targetPlayer, worldServer, player.dimension, targetDimension, targetPlayer.posX, targetPlayer.posZ);
+				tranferToDimension(player, targetPlayer, worldServer, player.dimension, targetDimension, targetPlayer.posX, targetPlayer.posY + 1, targetPlayer.posZ);
 			}
+			break;
+
+		case 3:
+			player = CommandDimensionTeleport.getCommandSenderAsPlayer(sender);
+
+			if (checkPlayer(sender, player) == false || !checkDimension(sender, args[0]) || checkInts(args, 1, sender) == false)
+				break;
+
+			targetDimension = Integer.parseInt(args[0]);
+			worldServer = mcServer.worldServerForDimension(targetDimension);
+
+			tranferToDimension(player, worldServer, player.dimension, targetDimension, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			break;
+		case 4:
+			boolean solo = false;
+
+			if (!SurvivalTweaks.isInteger(args[0]))
+				player = CommandDimensionTeleport.getPlayer(sender, args[0]);
+			else
+			{
+				player = getCommandSenderAsPlayer(sender);
+				solo = true;
+			}
+
+			if (!solo && (checkPlayer(sender, player) == false || !checkDimension(sender, args[1]) || checkInts(args, 2, sender) == false))
+				break;
+
+			if (solo && (checkPlayer(sender, player) == false || !checkDimension(sender, args[0]) || checkInts(args, 1, sender) == false))
+				break;
+
+			if (!solo)
+				targetDimension = Integer.parseInt(args[1]);
+			else
+				targetDimension = Integer.parseInt(args[0]);
+
+			worldServer = mcServer.worldServerForDimension(targetDimension);
+
+			if (!solo)
+				tranferToDimension(player, worldServer, player.dimension, targetDimension, Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+			else
+				tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[1]), Double.valueOf(args[2]), Double.parseDouble(args[3]));
+
+			break;
+		case 5:
+			player = CommandDimensionTeleport.getPlayer(sender, args[0]);
+
+			if (checkPlayer(sender, player) == false || !checkDimension(sender, args[1]) || checkInts(args, 2, sender) == false)
+				break;
+
+			targetDimension = Integer.parseInt(args[1]);
+			worldServer = mcServer.worldServerForDimension(targetDimension);
+
+			tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[2]), Double.valueOf(args[3]), Double.parseDouble(args[4]));
+
 			break;
 		default:
 			printUsage(sender);
@@ -116,18 +171,21 @@ public class CommandDimensionTeleport extends CommandBase
 		if (args.length >= 1)
 		{
 			String lastLetter = args[args.length - 1];
-			ArrayList<String> playerList = new ArrayList<>();
+			ArrayList<String> argsList = new ArrayList<>();
 			GameProfile[] profiles = MinecraftServer.getServer().func_152357_F();
+
+			if (args.length == 1)
+				argsList.add("list");
 
 			for (int x = 0; x < profiles.length; x++)
 			{
 				if (manager.func_152596_g(profiles[x]) && doesStringStartWith(lastLetter, profiles[x].getName()))
 				{
-					playerList.add(profiles[x].getName());
+					argsList.add(profiles[x].getName());
 				}
 			}
 
-			return playerList;
+			return argsList;
 		}
 
 		return null;
@@ -163,44 +221,99 @@ public class CommandDimensionTeleport extends CommandBase
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.useage"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.list"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id.xz"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id.xyz"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2id"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2id.xz"));
+		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2id.xyz"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.p2p"));
 	}
 
-	private void tranferToDimension(EntityPlayerMP player, EntityPlayerMP targetPlayer, WorldServer worldServer, int currentDimensionID, int targetDimensionID, double x, double z)
+	private boolean checkInts(String[] args, int i, ICommandSender sender)
+	{
+		boolean isInt = true;
+
+		for (; i < args.length; i++)
+		{
+			if (!SurvivalTweaks.isInteger(args[i]))
+			{
+				sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.number", args[i]));
+				isInt = false;
+			}
+		}
+
+		return isInt;
+	}
+
+	private boolean checkPlayer(ICommandSender sender, EntityPlayerMP player)
+	{
+		if (player == null)
+		{
+			sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.player"));
+			return false;
+		}
+
+		return true;
+	}
+
+	private boolean checkDimension(ICommandSender sender, String arg)
+	{
+		if (!SurvivalTweaks.isInteger(arg) || !DimensionManager.isDimensionRegistered(Integer.parseInt(arg)))
+		{
+			sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.dimension"));
+			return false;
+		}
+
+		return true;
+	}
+
+	private void tranferToDimension(EntityPlayerMP player, EntityPlayerMP targetPlayer, WorldServer worldServer, int currentDimensionID, int targetDimensionID, double x, Double y, double z)
 	{
 		if (targetDimensionID == currentDimensionID)
 		{
 			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.nowhoosh"));
 			return;
 		}
-		
+
 		if (player.equals(targetPlayer))
 		{
 			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.sameplayer"));
 			return;
 		}
-		
-		mcServer.getConfigurationManager().transferPlayerToDimension(player, targetDimensionID, new InterDimTeleporter(worldServer, x, z));
+
+		InterDimTeleporter teleporter;
+
+		if (y != null)
+			teleporter = new InterDimTeleporter(worldServer, x, y, z);
+		else
+		{
+			teleporter = new InterDimTeleporter(worldServer, x, z);
+			y = teleporter.getY();
+		}
+
+		mcServer.getConfigurationManager().transferPlayerToDimension(player, targetDimensionID, teleporter);
 
 		if (currentDimensionID == 1)
 		{
-			// player coods are not updated..... Rerunning the method so that the player won't be buried alive... Or flying downward
-			int y = InterDimTeleporter.getY((int) x, (int) z, 0, worldServer.getActualHeight(), worldServer);
-
 			player.setPositionAndUpdate(x, y, z);
 			worldServer.spawnEntityInWorld(player);
 			worldServer.updateEntityWithOptionalForce(player, false);
 		} else if (targetPlayer != null)
 		{
-			player.setPositionAndUpdate(x, player.posY, z);
+			player.setPositionAndUpdate(x, y, z);
 			worldServer.updateEntityWithOptionalForce(player, false); // just to be safe
 		}
 	}
 
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID)
 	{
-		tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, player.posX, player.posZ);
+		ChunkCoordinates coord = worldServer.getSpawnPoint();
+		tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, coord.posX, null, coord.posZ);
+	}
+
+	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID, int x, int z)
+	{
+		tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, x, null, z);
 	}
 
 }

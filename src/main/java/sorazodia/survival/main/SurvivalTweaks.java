@@ -1,6 +1,8 @@
 package sorazodia.survival.main;
 
 import static sorazodia.survival.main.SurvivalTweaks.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundCategory;
 import net.minecraftforge.common.MinecraftForge;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.mechanics.EnderEvent;
@@ -46,9 +48,9 @@ public class SurvivalTweaks
 	{
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
+		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
 
 		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
-		FMLCommonHandler.instance().bus().register(new EntityTickEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
 
 		FMLLog.info("[Survival Tweaks] Mod Loaded");
@@ -82,6 +84,11 @@ public class SurvivalTweaks
 		}
 
 		return true;
+	}
+	
+	public static float getVolume()
+	{
+		return Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
 	}
 
 }

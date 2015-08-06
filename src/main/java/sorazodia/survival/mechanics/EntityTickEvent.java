@@ -1,23 +1,34 @@
 package sorazodia.survival.mechanics;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 public class EntityTickEvent
 {
+	private float assistIncrease = 0;
+    private float pervStepHeight = 0.5F; //Minecraft default
 	
 	@SubscribeEvent
-	public void playerTick(PlayerTickEvent tickEvent) 
+	public void playerUpdate(LivingUpdateEvent updateEvent)
 	{
-		EntityPlayer player = tickEvent.player;
-		player.stepHeight = 0.5F;
-		
-		if (player.getActivePotionEffect(Potion.jump) != null)
+		EntityLivingBase entity = updateEvent.entityLiving;
+
+		if (entity.getActivePotionEffect(Potion.jump) != null)
 		{
-			player.stepHeight += player.getActivePotionEffect(Potion.jump).getAmplifier() + 1;	
+			pervStepHeight = Math.abs(entity.stepHeight - assistIncrease);
+			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
+			
+			entity.stepHeight = assistIncrease + pervStepHeight;
 		}
+		else
+		{
+			entity.stepHeight -= assistIncrease;
+			assistIncrease = 0;
+		}
+
+		System.out.println(entity.stepHeight);
 
 	}
 
