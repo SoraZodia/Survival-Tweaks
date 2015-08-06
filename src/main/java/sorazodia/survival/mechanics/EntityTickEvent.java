@@ -8,8 +8,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 public class EntityTickEvent
 {
 	private float assistIncrease = 0;
-    private float pervStepHeight = 0.5F; //Minecraft default
-	
+
 	@SubscribeEvent
 	public void playerUpdate(LivingUpdateEvent updateEvent)
 	{
@@ -17,18 +16,20 @@ public class EntityTickEvent
 
 		if (entity.getActivePotionEffect(Potion.jump) != null)
 		{
-			pervStepHeight = Math.abs(entity.stepHeight - assistIncrease);
+			entity.stepHeight = assistIncrease;
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
-			
-			entity.stepHeight = assistIncrease + pervStepHeight;
-		}
-		else
+
+			if (entity.stepHeight == 1.0)
+			{
+				entity.stepHeight = assistIncrease + 1;
+			} else
+				entity.stepHeight = assistIncrease;
+
+		} else
 		{
 			entity.stepHeight -= assistIncrease;
 			assistIncrease = 0;
 		}
-
-		System.out.println(entity.stepHeight);
 
 	}
 
