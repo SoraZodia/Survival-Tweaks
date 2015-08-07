@@ -18,6 +18,8 @@ public class ConfigHandler
 	private static String[] potionList = {};
 	private static ArrayList<Integer> potionIDs = new ArrayList<>();
 	private static ArrayList<String> invalidEntry = new ArrayList<>();
+	private static boolean spawnLava = true;
+	private static boolean burn = true;
 	
 	public ConfigHandler(FMLPreInitializationEvent event)
 	{
@@ -27,7 +29,10 @@ public class ConfigHandler
 
 	public static void syncConfig()
 	{
-		addToIDList(configFile.getStringList(StatCollector.translateToLocal("survivaltweaks.config"), Configuration.CATEGORY_GENERAL, potionList, StatCollector.translateToLocal("survivaltweaks.config.description")));
+		addToIDList(configFile.getStringList(StatCollector.translateToLocal("survivaltweaks.config.bed"), Configuration.CATEGORY_GENERAL, potionList, StatCollector.translateToLocal("survivaltweaks.config.bed.description")));
+		spawnLava = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.lava"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.lava.effect"));
+		burn = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.burn"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.burn.effect"));
+		
 		if (configFile.hasChanged())
 			configFile.save();
 	}
@@ -69,6 +74,16 @@ public class ConfigHandler
 	{
 		if (invalidEntry.size() > 0)
 			joinEvent.player.addChatComponentMessage(new ChatComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
+	}
+
+	public static boolean getSpawnLava()
+	{
+		return spawnLava;
+	}
+
+	public static boolean getBurn()
+	{
+		return burn;
 	}
 
 }

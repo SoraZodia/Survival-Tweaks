@@ -1,6 +1,10 @@
 survivaltweaks.invalid.potion=The following potion IDs is invalid: %s
-survivaltweaks.config=Effects Cleared by Bed
-survivaltweaks.config.description=Effects with these IDs will be cleared when the player sleeps
+survivaltweaks.config.bed=Effects Cleared by Bed
+survivaltweaks.config.bed.description=Effects with these IDs will be cleared when the player sleeps
+survivaltweaks.config.lava=Spawn Lava
+survivaltweaks.config.lava.effect=Spawn lava when Netherrack or Quartz Ore is mined
+survivaltweaks.config.burn=Burn Entities
+survivaltweaks.config.burn.effect=Burn entities when they step on Netherrack or Quartz Ore
 
 survivaltweaks.invalid.argument=Invalid Arguments
 survivaltweaks.invalid.dimension=Invaild ID or Dimension don't exist

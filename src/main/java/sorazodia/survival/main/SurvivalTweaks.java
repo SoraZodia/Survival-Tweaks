@@ -1,10 +1,14 @@
 package sorazodia.survival.main;
 
-import static sorazodia.survival.main.SurvivalTweaks.*;
+import static sorazodia.survival.main.SurvivalTweaks.GUI_FACTORY;
+import static sorazodia.survival.main.SurvivalTweaks.MODID;
+import static sorazodia.survival.main.SurvivalTweaks.NAME;
+import static sorazodia.survival.main.SurvivalTweaks.VERSION;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraftforge.common.MinecraftForge;
 import sorazodia.survival.config.ConfigHandler;
+import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
 import sorazodia.survival.mechanics.PlayerActionEvent;
@@ -49,6 +53,7 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
+		MinecraftForge.EVENT_BUS.register(new BlockBreakEvent());
 
 		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
