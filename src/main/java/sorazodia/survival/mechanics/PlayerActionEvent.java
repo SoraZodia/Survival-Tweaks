@@ -129,7 +129,8 @@ public class PlayerActionEvent
 			ForgeDirection offset = ForgeDirection.getOrientation(face);
 			Block targetBlock = world.getBlock(x, y, z);
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-
+			
+			player.swingItem();
 			if (!player.isSneaking())
 			{
 				x += offset.offsetX;

@@ -298,7 +298,8 @@ public class CommandDimensionTeleport extends CommandBase
 			player.setPositionAndUpdate(x, y, z);
 			worldServer.spawnEntityInWorld(player);
 			worldServer.updateEntityWithOptionalForce(player, false);
-		} else if (targetPlayer != null)
+		} 
+		else if (targetPlayer != null)
 		{
 			player.setPositionAndUpdate(x, y, z);
 			worldServer.updateEntityWithOptionalForce(player, false); // just to be safe

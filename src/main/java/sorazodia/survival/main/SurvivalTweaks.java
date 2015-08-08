@@ -6,7 +6,12 @@ import static sorazodia.survival.main.SurvivalTweaks.NAME;
 import static sorazodia.survival.main.SurvivalTweaks.VERSION;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
@@ -14,12 +19,12 @@ import sorazodia.survival.mechanics.EntityTickEvent;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 @Mod(name = NAME, version = VERSION, modid = MODID, guiFactory = GUI_FACTORY)
@@ -29,21 +34,32 @@ public class SurvivalTweaks
 	public static final String VERSION = "1.0.0";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
-	
+
 	private static ConfigHandler configHandler;
+	private CommandDimensionTeleport teleportCommand = new CommandDimensionTeleport();
+	private Logger log;
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
-		if (!Loader.isModLoaded("Mystcraft") || !Loader.isModLoaded("rftools"))
-			preServerEvent.registerServerCommand(new CommandDimensionTeleport());
+		preServerEvent.registerServerCommand(teleportCommand);
+	}
+
+	@EventHandler
+	public void serverStarted(FMLServerStartedEvent serverInitEvent)
+	{
+		MinecraftServer server = MinecraftServer.getServer();
+		if (Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools"))
+			if (server.getCommandManager().getCommands().containsKey(teleportCommand.getCommandName()))
+				server.getCommandManager().getCommands().remove(teleportCommand.getCommandName());
 	}
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
-		FMLLog.info("[Survival Tweaks] Initializating Mod");
-		FMLLog.info("[Survival Tweaks] Syncing config");
+		log = preEvent.getModLog();
+		log.log(Level.INFO, "Initializating Mod");
+		log.log(Level.INFO, "Syncing config");
 		configHandler = new ConfigHandler(preEvent);
 	}
 
@@ -58,7 +74,7 @@ public class SurvivalTweaks
 		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
 
-		FMLLog.info("[Survival Tweaks] Mod Loaded");
+		log.log(Level.INFO, "Mod Loaded");
 	}
 
 	// Thank you StackOverflow
@@ -90,7 +106,7 @@ public class SurvivalTweaks
 
 		return true;
 	}
-	
+
 	public static float getVolume()
 	{
 		return Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);

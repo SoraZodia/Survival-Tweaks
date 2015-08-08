@@ -38,7 +38,7 @@ public class EnderEvent
 			if (heldItem == Items.ender_pearl)
 				throwPearl(world, player, heldStack);
 
-			if (heldItem == Items.ender_eye)
+			if (heldItem == Items.ender_eye && player.dimension == 0)
 				teleportToStronghold(useEvent.world, player);;
 		}
 

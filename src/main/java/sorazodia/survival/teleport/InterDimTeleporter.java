@@ -16,7 +16,7 @@ public class InterDimTeleporter extends Teleporter
 
 	public InterDimTeleporter(WorldServer worldServer, double x, double z)
 	{
-		this(worldServer, x, getY((int)x, (int)z, worldServer.getSpawnPoint().posY, worldServer.getActualHeight(), worldServer), z);
+		this(worldServer, x, getY((int)x, (int)z, worldServer.getHeightValue((int) x, (int) z), worldServer.getActualHeight(), worldServer), z);
 	}
 	
 	public InterDimTeleporter(WorldServer worldServer, double x, double y, double z)
