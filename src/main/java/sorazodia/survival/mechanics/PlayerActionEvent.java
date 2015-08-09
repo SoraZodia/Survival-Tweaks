@@ -103,7 +103,7 @@ public class PlayerActionEvent
 			if (heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
 
-			if (heldItem instanceof ItemTool && useEvent.action == Action.RIGHT_CLICK_BLOCK)
+			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && useEvent.action == Action.RIGHT_CLICK_BLOCK)
 				placeBlocks(world, player, heldStack, useEvent.x, useEvent.y, useEvent.z, useEvent.face);
 		}
 
@@ -147,7 +147,7 @@ public class PlayerActionEvent
 						inventory.consumeInventoryItem(toPlace.getItem());
 				}
 
-			} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem))
+			} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem) || canItemHarvest(heldItem, targetBlock) || world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null)
 			{
 				if (targetBlock == Blocks.bedrock)
 					return;
@@ -170,8 +170,15 @@ public class PlayerActionEvent
 
 	}
 
-	
-
+	private boolean canItemHarvest(ItemStack harvestItem, Block blockToBreak)
+	{
+		for (String classes : harvestItem.getItem().getToolClasses(harvestItem))
+		{
+			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage()))
+				return true;
+		}
+		return false;
+	}
 	
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{

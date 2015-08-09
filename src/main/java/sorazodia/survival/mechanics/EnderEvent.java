@@ -38,7 +38,7 @@ public class EnderEvent
 			if (heldItem == Items.ender_pearl)
 				throwPearl(world, player, heldStack);
 
-			if (heldItem == Items.ender_eye && player.dimension == 0)
+			if (heldItem == Items.ender_eye)
 				teleportToStronghold(useEvent.world, player);;
 		}
 
@@ -51,10 +51,12 @@ public class EnderEvent
 
 		ChunkPosition nearestStrongHold = world.findClosestStructure("Stronghold", (int) player.posX, (int) player.posY, (int) player.posZ);
 
-		if (!world.isRemote)
+		if (!world.isRemote && nearestStrongHold != null)
 		{
 			//rerun so player won't be inside a wall
 			nearestStrongHold = world.findClosestStructure("Stronghold", nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ);
+			
+			world.getChunkProvider().loadChunk(nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosZ);
 			player.setPositionAndUpdate(nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ);
 		}
 	}

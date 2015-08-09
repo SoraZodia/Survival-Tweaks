@@ -1,4 +1,4 @@
-package sorazodia.survival.mechanics;
+package sorazodia.survival.asm.patch;
 
 import net.minecraft.util.ChunkCoordinates;
 

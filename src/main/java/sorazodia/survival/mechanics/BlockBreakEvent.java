@@ -49,6 +49,9 @@ public class BlockBreakEvent
 					float damage = 0;
 					switch (world.difficultySetting)
 					{
+					case PEACEFUL:
+						damage = 1.0F;
+						break;
 					case EASY:
 						damage = 1.0F;
 						break;
@@ -59,7 +62,7 @@ public class BlockBreakEvent
 						damage = 4.0F;
 						break;
 					default:
-						damage = 1.0F;
+						damage = 2.0F;
 						break;
 					}
 					player.attackEntityFrom(DamageSource.magic, damage);
@@ -69,6 +72,9 @@ public class BlockBreakEvent
 					int duration = 0;
 					switch (world.difficultySetting)
 					{
+					case PEACEFUL:
+						duration = 50;
+						break;
 					case EASY:
 						duration = 50;
 						break;
@@ -79,7 +85,7 @@ public class BlockBreakEvent
 						duration = 260;
 						break;
 					default:
-						duration = 50;
+						duration = 130;
 						break;
 					}
 					player.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, duration));

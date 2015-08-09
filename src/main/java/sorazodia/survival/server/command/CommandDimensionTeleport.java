@@ -28,6 +28,11 @@ public class CommandDimensionTeleport extends CommandBase
 	{
 		return "tpd";
 	}
+	
+	public static String getName()
+	{
+		return "tpd";
+	}
 
 	@Override
 	public int getRequiredPermissionLevel()

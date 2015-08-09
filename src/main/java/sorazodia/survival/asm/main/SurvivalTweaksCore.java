@@ -1,4 +1,4 @@
-package sorazodia.survival.main;
+package sorazodia.survival.asm.main;
 
 import java.util.Arrays;
 

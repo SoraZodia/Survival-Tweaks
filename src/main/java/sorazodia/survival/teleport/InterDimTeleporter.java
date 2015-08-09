@@ -54,7 +54,7 @@ public class InterDimTeleporter extends Teleporter
 		if (blockLower == Blocks.air && blockLower == Blocks.air) //Player is in the air, lower y
 			return getY(x, z, minHeight, y, worldServer);
 		
-		if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too high;
+		if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too low;
 			return getY(x, z, y, maxHeight, worldServer);
 		
 		return getY(x, z, y, maxHeight, worldServer);

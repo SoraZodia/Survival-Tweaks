@@ -36,22 +36,22 @@ public class SurvivalTweaks
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
 
 	private static ConfigHandler configHandler;
-	private CommandDimensionTeleport teleportCommand = new CommandDimensionTeleport();
 	private Logger log;
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
-		preServerEvent.registerServerCommand(teleportCommand);
+		preServerEvent.registerServerCommand(new CommandDimensionTeleport());
 	}
 
 	@EventHandler
 	public void serverStarted(FMLServerStartedEvent serverInitEvent)
 	{
 		MinecraftServer server = MinecraftServer.getServer();
+		
 		if (Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools"))
-			if (server.getCommandManager().getCommands().containsKey(teleportCommand.getCommandName()))
-				server.getCommandManager().getCommands().remove(teleportCommand.getCommandName());
+			if (server.getCommandManager().getCommands().containsKey(CommandDimensionTeleport.getName()))
+				server.getCommandManager().getCommands().remove(CommandDimensionTeleport.getName());
 	}
 	
 	@EventHandler
