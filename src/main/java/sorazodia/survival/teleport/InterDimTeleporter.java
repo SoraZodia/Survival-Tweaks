@@ -26,6 +26,13 @@ public class InterDimTeleporter extends Teleporter
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		
+		if (worldServer.provider.dimensionId == 1) //The End is weird
+		{
+			this.x = 0;
+			this.z = 0;
+			this.y = getY((int)x, (int)z, 65, 128, worldServer);
+		}
 	}
 
 	@Override
@@ -51,7 +58,7 @@ public class InterDimTeleporter extends Teleporter
 		if (minHeight == maxHeight)
 			return maxHeight; //Used as a fail-safe
 		
-		if (blockLower == Blocks.air && blockLower == Blocks.air) //Player is in the air, lower y
+		if (blockUpper == Blocks.air && blockLower == Blocks.air) //Player is in the air, lower y
 			return getY(x, z, minHeight, y, worldServer);
 		
 		if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too low;

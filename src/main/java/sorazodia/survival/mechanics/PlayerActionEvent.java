@@ -15,6 +15,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
+import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S32PacketConfirmTransaction;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -31,6 +32,7 @@ import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
+import cpw.mods.fml.relauncher.Side;
 
 public class PlayerActionEvent
 {
@@ -42,9 +44,9 @@ public class PlayerActionEvent
 		{
 			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
 
-			if (player.getItemInUse() != null && player.getItemInUse().getItem() instanceof ItemSword) //corruption problems? Method not found
+			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword) //corruption problems? Method not found
 			{
-				player.getItemInUse().damageItem((int) hurtEvent.ammount, player);
+				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
 				hurtEvent.ammount /= 2;
 
 				if (player.isSneaking())
@@ -68,18 +70,25 @@ public class PlayerActionEvent
 	public void onSleep(PlayerTickEvent tickEvent)
 	{
 		EntityPlayer player = tickEvent.player;
-		FoodStats hunger = player.getFoodStats();
 
 		if (player.isPlayerFullyAsleep())
 		{
+			FoodStats hunger = player.getFoodStats();
+
 			player.heal(20F);
-			hunger.setFoodLevel(hunger.getFoodLevel() - 5);
 			player.curePotionEffects(new ItemStack(Items.milk_bucket));
 
 			for (int id : ConfigHandler.getPotionIDs())
 			{
 				if (player.isPotionActive(id))
 					player.removePotionEffect(id);
+			}
+
+			hunger.addStats(-10, 0);
+
+			if (tickEvent.side == Side.CLIENT)
+			{
+				Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(new S06PacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
 			}
 
 		}
@@ -98,7 +107,7 @@ public class PlayerActionEvent
 			World world = useEvent.world;
 
 			if (heldItem instanceof ItemArmor)
-				switchArmor(player, heldStack);
+				switchArmor(player, world, heldStack);
 
 			if (heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
@@ -129,7 +138,7 @@ public class PlayerActionEvent
 			ForgeDirection offset = ForgeDirection.getOrientation(face);
 			Block targetBlock = world.getBlock(x, y, z);
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			
+
 			player.swingItem();
 			if (!player.isSneaking())
 			{
@@ -139,7 +148,7 @@ public class PlayerActionEvent
 
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0)
 				{
-					world.playSoundAtEntity(player, "dig.stone", SurvivalTweaks.getVolume(), SurvivalTweaks.getVolume());
+					SurvivalTweaks.playSound("dig.stone", world, player);
 
 					if (!world.isRemote)
 						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
@@ -152,7 +161,7 @@ public class PlayerActionEvent
 				if (targetBlock == Blocks.bedrock)
 					return;
 
-				world.playSoundAtEntity(player, "dig.stone", SurvivalTweaks.getVolume(), SurvivalTweaks.getVolume());
+				SurvivalTweaks.playSound("dig.stone", world, player);
 
 				if (!world.isRemote)
 				{
@@ -179,7 +188,7 @@ public class PlayerActionEvent
 		}
 		return false;
 	}
-	
+
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{
 		if (!player.capabilities.isCreativeMode)
@@ -191,13 +200,14 @@ public class PlayerActionEvent
 		arrow.setDamage(damage);
 
 		player.swingItem();
-		world.playSoundAtEntity(player, "random.bow", SurvivalTweaks.getVolume(), SurvivalTweaks.getVolume());
+
+		SurvivalTweaks.playSound("random.bow", world, player);
 
 		if (!world.isRemote)
 			world.spawnEntityInWorld(arrow);
 	}
 
-	private void switchArmor(EntityPlayer player, ItemStack heldItem)
+	private void switchArmor(EntityPlayer player, World world, ItemStack heldItem)
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = player.inventory.currentItem;
@@ -213,9 +223,10 @@ public class PlayerActionEvent
 		if (!player.capabilities.isCreativeMode)
 			inventory.setInventorySlotContents(heldItemIndex, equipedArmor);
 
-		player.playSound("mob.irongolem.throw", SurvivalTweaks.getVolume(), SurvivalTweaks.getVolume());
+		SurvivalTweaks.playSound("mob.irongolem.throw", world, player);
 
-		Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
+		if (player.worldObj.isRemote)
+			Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
 	}
 
 	private double calculateDamage(double damage, EntityLivingBase entity)

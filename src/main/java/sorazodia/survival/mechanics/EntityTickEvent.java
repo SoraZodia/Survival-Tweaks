@@ -77,16 +77,16 @@ public class EntityTickEvent
 				switch (world.difficultySetting)
 				{
 				case PEACEFUL:
-					burnTime = 10;
+					burnTime = 1;
 					break;
 				case EASY:
-					burnTime = 10;
+					burnTime = 1;
 					break;
 				case NORMAL:
 					burnTime = 5;
 					break;
 				case HARD:
-					burnTime = 1;
+					burnTime = 10;
 					break;
 				default:
 					burnTime = 5;

@@ -66,7 +66,7 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode)
 			return;
 
-		world.playSoundAtEntity(player, "random.bow", SurvivalTweaks.getVolume(), SurvivalTweaks.getVolume());
+		SurvivalTweaks.playSound("random.bow", player.worldObj, player);
 
 		if (!world.isRemote)
 			world.spawnEntityInWorld(new EntityEnderPearl(world, player));

@@ -6,7 +6,9 @@ import static sorazodia.survival.main.SurvivalTweaks.NAME;
 import static sorazodia.survival.main.SurvivalTweaks.VERSION;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
@@ -31,12 +33,13 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 public class SurvivalTweaks
 {
 	public static final String MODID = "survivalTweaks";
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = "1.0.2";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
 
 	private static ConfigHandler configHandler;
-	private Logger log;
+	private static Logger log;
+	private static float soundLevel = 0;
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
@@ -48,12 +51,12 @@ public class SurvivalTweaks
 	public void serverStarted(FMLServerStartedEvent serverInitEvent)
 	{
 		MinecraftServer server = MinecraftServer.getServer();
-		
+
 		if (Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools"))
 			if (server.getCommandManager().getCommands().containsKey(CommandDimensionTeleport.getName()))
 				server.getCommandManager().getCommands().remove(CommandDimensionTeleport.getName());
 	}
-	
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
@@ -107,9 +110,12 @@ public class SurvivalTweaks
 		return true;
 	}
 
-	public static float getVolume()
+	public static void playSound(String name, World world, EntityPlayer player)
 	{
-		return Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
+		if (world.isRemote)
+			soundLevel = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
+		
+		player.playSound(name, soundLevel, soundLevel);
 	}
 
 }
