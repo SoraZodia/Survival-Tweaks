@@ -28,7 +28,7 @@ public class CommandDimensionTeleport extends CommandBase
 	{
 		return "tpd";
 	}
-	
+
 	public static String getName()
 	{
 		return "tpd";
@@ -204,15 +204,22 @@ public class CommandDimensionTeleport extends CommandBase
 		String name;
 		String message;
 
-		for (int x = 0; x < ids.length; x++)
+		for (int x : ids)
 		{
-			if (ids[x] != currectDimension)
+			DimensionChecker.add(x, DimensionManager.getProvider(x).getDimensionName());
+		}
+
+		for (int x : DimensionChecker.getIDList())
+		{
+			int id = x;
+			if (id != currectDimension)
 				message = (" [%i: %s] ");
 			else
 				message = (" [%i: %s" + "(" + StatCollector.translateToLocal("survivaltweaks.command.tpd.list.here") + ")] ");
 
-			name = DimensionManager.getProvider(ids[x]).getDimensionName();
-			message = message.replace("%i", ids[x].toString());
+			name = DimensionChecker.getName(x);
+			
+			message = message.replace("%i", String.valueOf(id));
 			message = message.replace("%s", name);
 
 			str.append(message);
@@ -303,8 +310,7 @@ public class CommandDimensionTeleport extends CommandBase
 			player.setPositionAndUpdate(x, y, z);
 			worldServer.spawnEntityInWorld(player);
 			worldServer.updateEntityWithOptionalForce(player, false);
-		} 
-		else if (targetPlayer != null)
+		} else if (targetPlayer != null)
 		{
 			player.setPositionAndUpdate(x, y, z);
 			worldServer.updateEntityWithOptionalForce(player, false); // just to be safe

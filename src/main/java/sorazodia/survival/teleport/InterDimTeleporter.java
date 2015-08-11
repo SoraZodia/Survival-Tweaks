@@ -16,7 +16,7 @@ public class InterDimTeleporter extends Teleporter
 
 	public InterDimTeleporter(WorldServer worldServer, double x, double z)
 	{
-		this(worldServer, x, getY((int)x, (int)z, worldServer.getHeightValue((int) x, (int) z), worldServer.getActualHeight(), worldServer), z);
+		this(worldServer, x, getY((int)x, (int)z, worldServer.getSpawnPoint().posY, worldServer.getActualHeight(), worldServer), z);
 	}
 	
 	public InterDimTeleporter(WorldServer worldServer, double x, double y, double z)
@@ -64,7 +64,11 @@ public class InterDimTeleporter extends Teleporter
 		if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too low;
 			return getY(x, z, y, maxHeight, worldServer);
 		
-		return getY(x, z, y, maxHeight, worldServer);
+
+		if (blockLower == Blocks.air && blockUpper != Blocks.air) //Player is in void, y too low;
+			return getY(x, z, y, maxHeight, worldServer);
+		
+		return 70; //Another fail-safe
 	}
 
 	public Double getY()

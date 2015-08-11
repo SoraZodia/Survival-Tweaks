@@ -84,7 +84,8 @@ public class PlayerActionEvent
 					player.removePotionEffect(id);
 			}
 
-			hunger.addStats(-10, 0);
+			if (hunger.getFoodLevel() > 0)
+				hunger.addStats(-10, 0);
 
 			if (tickEvent.side == Side.CLIENT)
 			{
@@ -214,6 +215,9 @@ public class PlayerActionEvent
 		int armorIndex = EntityLiving.getArmorPosition(heldItem) - 1;
 
 		if (player.getCurrentArmor(armorIndex) == null)
+			return;
+
+		if (heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
 			return;
 
 		ItemStack equipedArmor = player.getCurrentArmor(armorIndex);

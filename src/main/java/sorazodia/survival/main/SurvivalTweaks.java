@@ -20,6 +20,7 @@ import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
+import sorazodia.survival.server.command.DimensionChecker;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
@@ -45,6 +46,7 @@ public class SurvivalTweaks
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
 		preServerEvent.registerServerCommand(new CommandDimensionTeleport());
+		DimensionChecker.clear();
 	}
 
 	@EventHandler
@@ -61,7 +63,7 @@ public class SurvivalTweaks
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
 		log = preEvent.getModLog();
-		log.log(Level.INFO, "Initializating Mod");
+		log.log(Level.INFO, "Initializating...");
 		log.log(Level.INFO, "Syncing config");
 		configHandler = new ConfigHandler(preEvent);
 	}
@@ -69,10 +71,12 @@ public class SurvivalTweaks
 	@EventHandler
 	public void init(FMLInitializationEvent initEvent)
 	{
+		log.log(Level.INFO, "Registering Events");
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
 		MinecraftForge.EVENT_BUS.register(new BlockBreakEvent());
+		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
 
 		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
