@@ -11,7 +11,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import sorazodia.survival.config.ConfigHandler;
@@ -63,15 +62,15 @@ public class SurvivalTweaks
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
 		log = preEvent.getModLog();
-		log.log(Level.INFO, "Initializating...");
-		log.log(Level.INFO, "Syncing config");
+		log.info("Initializating...");
+		log.info("Syncing config");
 		configHandler = new ConfigHandler(preEvent);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent initEvent)
 	{
-		log.log(Level.INFO, "Registering Events");
+		log.info("Registering Events");
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
@@ -81,7 +80,7 @@ public class SurvivalTweaks
 		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
 
-		log.log(Level.INFO, "Mod Loaded");
+		log.info("Mod Loaded");
 	}
 
 	// Thank you StackOverflow

@@ -44,8 +44,9 @@ public class PlayerActionEvent
 		{
 			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
 
-			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword) //corruption problems? Method not found
+			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword)
 			{
+				
 				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
 				hurtEvent.ammount /= 2;
 
