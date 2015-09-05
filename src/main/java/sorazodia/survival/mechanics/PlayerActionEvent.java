@@ -46,7 +46,7 @@ public class PlayerActionEvent
 
 			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword)
 			{
-				
+
 				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
 				hurtEvent.ammount /= 2;
 
@@ -76,7 +76,6 @@ public class PlayerActionEvent
 		{
 			FoodStats hunger = player.getFoodStats();
 
-			player.heal(20F);
 			player.curePotionEffects(new ItemStack(Items.milk_bucket));
 
 			for (int id : ConfigHandler.getPotionIDs())
@@ -85,8 +84,13 @@ public class PlayerActionEvent
 					player.removePotionEffect(id);
 			}
 
-			if (hunger.getFoodLevel() > 0)
-				hunger.addStats(-10, 0);
+			if (player.getHealth() != player.getMaxHealth())
+			{
+				player.heal(20F);
+
+				if (hunger.getFoodLevel() > 0)
+					hunger.addStats(-10, 0);
+			}
 
 			if (tickEvent.side == Side.CLIENT)
 			{
@@ -98,15 +102,15 @@ public class PlayerActionEvent
 	}
 
 	@SubscribeEvent
-	public void itemRightClick(PlayerInteractEvent useEvent)
+	public void itemRightClick(PlayerInteractEvent interactEvent)
 	{
-		EntityPlayer player = useEvent.entityPlayer;
+		EntityPlayer player = interactEvent.entityPlayer;
 
-		if (player.getCurrentEquippedItem() != null && useEvent.action != Action.LEFT_CLICK_BLOCK)
+		if (player.getCurrentEquippedItem() != null && interactEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
-			World world = useEvent.world;
+			World world = interactEvent.world;
 
 			if (heldItem instanceof ItemArmor)
 				switchArmor(player, world, heldStack);
@@ -114,8 +118,14 @@ public class PlayerActionEvent
 			if (heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
 
-			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && useEvent.action == Action.RIGHT_CLICK_BLOCK)
-				placeBlocks(world, player, heldStack, useEvent.x, useEvent.y, useEvent.z, useEvent.face);
+			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+			{
+				int x = interactEvent.x;
+				int y = interactEvent.y;
+				int z = interactEvent.z;
+
+				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face);
+			}
 		}
 
 	}
@@ -136,11 +146,13 @@ public class PlayerActionEvent
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
-			ItemBlock block = (ItemBlock) toPlace.getItem();
+			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
 			ForgeDirection offset = ForgeDirection.getOrientation(face);
 			Block targetBlock = world.getBlock(x, y, z);
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
+			boolean blockActivated = heldItem.getItem().onItemUse(heldItem, player, world, x, y, z, face, offset.offsetX, offset.offsetY, offset.offsetZ);
 
+			System.out.print(blockActivated);
 			player.swingItem();
 			if (!player.isSneaking())
 			{
@@ -152,8 +164,8 @@ public class PlayerActionEvent
 				{
 					SurvivalTweaks.playSound("dig.stone", world, player);
 
-					if (!world.isRemote)
-						block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+					if (!world.isRemote && !blockActivated)
+						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 					if (!isPlayerCreative)
 						inventory.consumeInventoryItem(toPlace.getItem());
 				}
@@ -168,7 +180,7 @@ public class PlayerActionEvent
 				if (!world.isRemote)
 				{
 					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
-					block.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+					itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
 				}
 				if (!isPlayerCreative)
 				{
