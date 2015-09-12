@@ -1,9 +1,6 @@
 package sorazodia.survival.main;
 
-import static sorazodia.survival.main.SurvivalTweaks.GUI_FACTORY;
-import static sorazodia.survival.main.SurvivalTweaks.MODID;
-import static sorazodia.survival.main.SurvivalTweaks.NAME;
-import static sorazodia.survival.main.SurvivalTweaks.VERSION;
+import static sorazodia.survival.main.SurvivalTweaks.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.entity.player.EntityPlayer;
@@ -83,7 +80,7 @@ public class SurvivalTweaks
 		log.info("Mod Loaded");
 	}
 
-	// Thank you StackOverflow
+	//From http://stackoverflow.com/questions/237159/whats-the-best-way-to-check-to-see-if-a-string-represents-an-integer-in-java
 	public static boolean isInteger(String arg)
 	{
 		if (arg == null)

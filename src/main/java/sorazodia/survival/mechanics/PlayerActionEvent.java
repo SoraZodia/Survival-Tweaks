@@ -1,29 +1,23 @@
 package sorazodia.survival.mechanics;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
 import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S32PacketConfirmTransaction;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.FoodStats;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -118,90 +112,19 @@ public class PlayerActionEvent
 			if (heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
 
-			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-			{
-				int x = interactEvent.x;
-				int y = interactEvent.y;
-				int z = interactEvent.z;
-
-				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face);
-			}
+//			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+//			{
+//				int x = interactEvent.x;
+//				int y = interactEvent.y;
+//				int z = interactEvent.z;
+//
+//				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face);
+//			}
 		}
 
 	}
 
-	private void placeBlocks(World world, EntityPlayer player, ItemStack heldItem, int x, int y, int z, int face)
-	{
-		InventoryPlayer inventory = player.inventory;
-		int heldItemIndex = inventory.currentItem;
-		ItemStack toPlace = player.inventory.getStackInSlot((heldItemIndex + 1) % 9);
 
-		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
-		{
-			if (heldItemIndex - 1 >= 0)
-				toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
-			else
-				toPlace = player.inventory.getStackInSlot(8); //Stops a ArrayOutOfBoundsException... % don't like negatives for some reasons...
-		}
-
-		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
-		{
-			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
-			ForgeDirection offset = ForgeDirection.getOrientation(face);
-			Block targetBlock = world.getBlock(x, y, z);
-			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean blockActivated = heldItem.getItem().onItemUse(heldItem, player, world, x, y, z, face, offset.offsetX, offset.offsetY, offset.offsetZ);
-
-			System.out.print(blockActivated);
-			player.swingItem();
-			if (!player.isSneaking())
-			{
-				x += offset.offsetX;
-				y += offset.offsetY;
-				z += offset.offsetZ;
-
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0)
-				{
-					SurvivalTweaks.playSound("dig.stone", world, player);
-
-					if (!world.isRemote && !blockActivated)
-						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
-					if (!isPlayerCreative)
-						inventory.consumeInventoryItem(toPlace.getItem());
-				}
-
-			} else if (heldItem.getItem().canHarvestBlock(targetBlock, heldItem) || canItemHarvest(heldItem, targetBlock) || world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null)
-			{
-				if (targetBlock == Blocks.bedrock)
-					return;
-
-				SurvivalTweaks.playSound("dig.stone", world, player);
-
-				if (!world.isRemote)
-				{
-					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
-					itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
-				}
-				if (!isPlayerCreative)
-				{
-					heldItem.damageItem(1, player);
-					inventory.consumeInventoryItem(toPlace.getItem());
-				}
-			}
-
-		}
-
-	}
-
-	private boolean canItemHarvest(ItemStack harvestItem, Block blockToBreak)
-	{
-		for (String classes : harvestItem.getItem().getToolClasses(harvestItem))
-		{
-			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage()))
-				return true;
-		}
-		return false;
-	}
 
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{

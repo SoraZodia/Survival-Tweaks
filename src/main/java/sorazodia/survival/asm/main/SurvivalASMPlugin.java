@@ -1,24 +1,24 @@
-package sorazodia.survival.asm;
+package sorazodia.survival.asm.main;
 
 import java.util.Map;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
-@IFMLLoadingPlugin.TransformerExclusions("sorazodia.survival")
-public class ASMPlugin implements IFMLLoadingPlugin
+@IFMLLoadingPlugin.TransformerExclusions({"sorazodia.survival"})
+public class SurvivalASMPlugin implements IFMLLoadingPlugin
 {
 
 	@Override
 	public String[] getASMTransformerClass()
 	{
-		return new String[]{"sorazodia.survival.asm.CompassTextureTranformer"};
+		return new String[]{"sorazodia.survival.asm.main.SurvivalTweaksTranformer"};
 	}
 
 	@Override
 	public String getModContainerClass()
 	{
-		return "sorazodia.survival.main.SurvivalTweaksCore";
+		return "sorazodia.survival.asm.main.SurvivalTweaksCore";
 	}
 
 	@Override

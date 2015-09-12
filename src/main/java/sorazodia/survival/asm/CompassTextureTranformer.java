@@ -1,60 +1,74 @@
 package sorazodia.survival.asm;
 
-import java.util.Arrays;
+import static org.objectweb.asm.Opcodes.*;
+import static sorazodia.survival.asm.Descriptor.*;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
-public class CompassTextureTranformer implements IClassTransformer
+import sorazodia.survival.asm.main.SurvivalTweaksCore;
+import sorazodia.survival.asm.patch.CompassStructureDetection;
+
+public class CompassTextureTranformer 
 {
-	private static final String[] CLASSTOTRANSFORM = {
-			"net.minecraft.client.renderer.texture.TextureCompass", "bqm" };
 
-	@Override
-	public byte[] transform(String name, String transformedName, byte[] tranformedClass)
-	{
-		int index = Arrays.asList(CLASSTOTRANSFORM).indexOf(transformedName);
-		return index != -1 ? transform(index, tranformedClass, !name.equals(transformedName)) : tranformedClass;
-	}
-
-	private static byte[] transform(int index, byte[] tranformedClass, boolean isObfuscated)
-	{
-		System.out.println("[Survival Tweaks Core] Transforming:" + CLASSTOTRANSFORM);
-		try
-		{
-			ClassNode node = new ClassNode();
-			ClassReader reader = new ClassReader(tranformedClass);
-
-			reader.accept(node, 0);
-
-			if (index == 0 || index == 1)
-				tranformCompassTextureClass(node, isObfuscated);
-
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-			node.accept(writer);
-			return writer.toByteArray();
-		} catch (Exception exception)
-		{
-			exception.printStackTrace();
-		}
-
-		return tranformedClass;
-	}
-
-	private static void tranformCompassTextureClass(ClassNode compassTextureClass, boolean isObfuscated)
+	public static void tranformCompassTextureClass(ClassNode compassTextureClass, boolean isObfuscated)
 	{
 		final String UPDATE_COMPASS = isObfuscated ? "a" : "updateCompass";
-		final String UPDATE_COMPASS_DESC = isObfuscated ? "(Lahb;DDDZZ)V" : "(Lnet/minecraft/world/World;DDDZZ)V";
-		
-		for (MethodNode methods : compassTextureClass.methods)
+		final String UPDATE_COMPASS_DESC = String.format("(%s;DDDZZ)V", WORLD.getDesc(isObfuscated));
+
+		for (MethodNode method : compassTextureClass.methods)
 		{
-			if (methods.name.equals(UPDATE_COMPASS) && methods.desc.equals(UPDATE_COMPASS_DESC)) 
+			if (method.name.equals(UPDATE_COMPASS) && method.desc.equals(UPDATE_COMPASS_DESC))
 			{
-				
+				AbstractInsnNode targetNode = null;
+				for (AbstractInsnNode instruction : method.instructions.toArray())
+				{
+					if (instruction.getOpcode() == DSTORE)
+					{
+						if (((VarInsnNode) instruction).var == 10 && instruction.getPrevious().getOpcode() == DMUL)
+						{
+							targetNode = instruction.getNext();
+							break;
+						}
+					}
+				}
+
+				if (targetNode != null)
+				{
+					//Order
+					//ALOAD, 1 - world instance
+					//DLOAD, 2 - double x pos of player
+					//DLOAD, 4 - double z pos of player
+					//DLOAD, 10 - the compass needle angle
+					//DLOAD, 6 - double angle
+					//ILOAD, 8 - a boolean value
+					
+					InsnList insnList = new InsnList();
+					final String DESC = String.format("(%s;%s%s%s%s%s)D", WORLD.getDesc(isObfuscated), DOUBLES.getDesc(), DOUBLES.getDesc(), DOUBLES.getDesc(), DOUBLES.getDesc(), BOOLEANS.getDesc());
+
+					insnList.add(new VarInsnNode(ALOAD, 1));
+					insnList.add(new VarInsnNode(DLOAD, 2));
+					insnList.add(new VarInsnNode(DLOAD, 4));
+					insnList.add(new VarInsnNode(DLOAD, 10));
+					insnList.add(new VarInsnNode(DLOAD, 6));
+					insnList.add(new VarInsnNode(ILOAD, 8));
+					insnList.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(CompassStructureDetection.class), "findStructure", DESC, false));
+					insnList.add(new VarInsnNode(DSTORE, 10));
+
+					method.instructions.insert(targetNode, insnList);
+
+					SurvivalTweaksCore.getLogger().info("TextureCompass Tranformed");
+				} else
+				{
+					SurvivalTweaksCore.getLogger().error("TextureCompass was not a Tranformer");
+				}
+
 			}
 		}
 

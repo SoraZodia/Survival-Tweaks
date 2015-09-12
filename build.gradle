@@ -17,14 +17,26 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "1.1.1-1.7.10"
-group= "com.sorazodia.cannibalism" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "Cannibalism"
+version = "1.0"
+group= "sorazodia.animamagia" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "pseudopotion"
 
 minecraft {
-    version = "1.7.10-10.13.0.1180"
-    runDir = "eclipse/assets"
+    version = "1.7.10-10.13.4.1448-1.7.10"
+    if(file('../run').exists())
+	{
+	   runDir = "../run"
+	}
+	else 
+	{
+	   runDir = "eclipse/assets"
+	}
 }
+
+jar {
+    manifest {
+	     attributes: 'FMLCorePlugin': 'sorazodia.survival.asm.main.SurvivalASMPlugin'
+		 attributes: 'FMLCorePluginContainsMod': 'true'
 
 dependencies {
     // you may put jars on which you depend on in ./libs
