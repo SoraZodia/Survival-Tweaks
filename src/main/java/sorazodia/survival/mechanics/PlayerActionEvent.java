@@ -1,32 +1,37 @@
 package sorazodia.survival.mechanics;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S32PacketConfirmTransaction;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.FoodStats;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent;
-import cpw.mods.fml.relauncher.Side;
 
 public class PlayerActionEvent
 {
@@ -62,35 +67,31 @@ public class PlayerActionEvent
 	}
 
 	@SubscribeEvent
-	public void onSleep(PlayerTickEvent tickEvent)
+	public void onSleep(PlayerWakeUpEvent wakeEvent)
 	{
-		EntityPlayer player = tickEvent.player;
+		EntityPlayer player = wakeEvent.entityPlayer;
+		FoodStats hunger = player.getFoodStats();
 
-		if (player.isPlayerFullyAsleep())
+		player.curePotionEffects(new ItemStack(Items.milk_bucket));
+
+		for (int id : ConfigHandler.getPotionIDs())
 		{
-			FoodStats hunger = player.getFoodStats();
+			if (player.isPotionActive(id))
+				player.removePotionEffect(id);
+		}
 
-			player.curePotionEffects(new ItemStack(Items.milk_bucket));
+		if (player.getHealth() < player.getMaxHealth())
+		{
+			player.heal(20F);
 
-			for (int id : ConfigHandler.getPotionIDs())
-			{
-				if (player.isPotionActive(id))
-					player.removePotionEffect(id);
-			}
+			if (hunger.getFoodLevel() > 0)
+				hunger.addStats(-10, 0);
+		}
 
-			if (player.getHealth() != player.getMaxHealth())
-			{
-				player.heal(20F);
-
-				if (hunger.getFoodLevel() > 0)
-					hunger.addStats(-10, 0);
-			}
-
-			if (tickEvent.side == Side.CLIENT)
-			{
-				Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(new S06PacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
-			}
-
+		if (player.worldObj.isRemote)
+		{
+			Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(
+					new S06PacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
 		}
 
 	}
@@ -112,19 +113,105 @@ public class PlayerActionEvent
 			if (heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
 
-//			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-//			{
-//				int x = interactEvent.x;
-//				int y = interactEvent.y;
-//				int z = interactEvent.z;
-//
-//				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face);
-//			}
+			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+			{
+				int x = interactEvent.x;
+				int y = interactEvent.y;
+				int z = interactEvent.z;
+
+				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face);
+			}
 		}
 
 	}
 
+	public void placeBlocks(World world, EntityPlayer player, ItemStack heldStack, int x, int y, int z, int face)
+	{
+		InventoryPlayer inventory = player.inventory;
+		int heldItemIndex = inventory.currentItem;
+		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % 9);
 
+		if (!(heldStack.getItem() instanceof ItemTool))
+			return;
+
+		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
+		{
+			if (heldItemIndex - 1 >= 0)
+				toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
+			else
+				toPlace = player.inventory.getStackInSlot(8); //Stops a ArrayOutOfBoundsException... % don't like negatives for some reasons...
+		}
+
+		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
+		{
+			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
+			ForgeDirection offset = ForgeDirection.getOrientation(face);
+			Block targetBlock = world.getBlock(x, y, z);
+			boolean isPlayerCreative = player.capabilities.isCreativeMode;
+
+			if (targetBlock.onBlockActivated(world, x, y, x, player, face, offset.offsetX,
+					offset.offsetY, offset.offsetZ))
+				return;
+
+			player.swingItem();
+
+			if (!player.isSneaking())
+			{
+				x += offset.offsetX;
+				y += offset.offsetY;
+				z += offset.offsetZ;
+
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class,
+						AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(
+						world, x, y, z))
+				{
+					SurvivalTweaks.playSound("dig.stone", world, player);
+
+					if (!world.isRemote)
+					{
+						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x,
+								(float) y, (float) z, toPlace.getItemDamage());
+					}
+					if (!isPlayerCreative)
+						inventory.consumeInventoryItem(toPlace.getItem());
+				}
+
+			} else if (heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(
+					heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(x, y, z).getHarvestTool(
+					toPlace.getItemDamage()) == null))
+			{
+				if (targetBlock == Blocks.bedrock)
+					return;
+
+				SurvivalTweaks.playSound("dig.stone", world, player);
+
+				if (!world.isRemote)
+				{
+					targetBlock.harvestBlock(world, player, x, y, z,
+							world.getBlockMetadata(x, y, z));
+					itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x,
+							(float) y, (float) z, toPlace.getItemDamage());
+				}
+				if (!isPlayerCreative)
+				{
+					heldStack.damageItem(1, player);
+					inventory.consumeInventoryItem(toPlace.getItem());
+				}
+			}
+
+		}
+
+	}
+
+	private static boolean canItemHarvest(ItemStack harvestItem, Block blockToBreak)
+	{
+		for (String classes : harvestItem.getItem().getToolClasses(harvestItem))
+		{
+			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage()))
+				return true;
+		}
+		return false;
+	}
 
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{
@@ -166,7 +253,8 @@ public class PlayerActionEvent
 		SurvivalTweaks.playSound("mob.irongolem.throw", world, player);
 
 		if (player.worldObj.isRemote)
-			Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(new S32PacketConfirmTransaction());
+			Minecraft.getMinecraft().getNetHandler().handleConfirmTransaction(
+					new S32PacketConfirmTransaction());
 	}
 
 	private double calculateDamage(double damage, EntityLivingBase entity)

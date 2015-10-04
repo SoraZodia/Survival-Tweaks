@@ -50,7 +50,7 @@ public class CompassTextureTranformer
 					//ILOAD, 8 - a boolean value
 					
 					InsnList insnList = new InsnList();
-					final String DESC = String.format("(%s;%s%s%s%s%s)D", WORLD.getDesc(isObfuscated), DOUBLES.getDesc(), DOUBLES.getDesc(), DOUBLES.getDesc(), DOUBLES.getDesc(), BOOLEANS.getDesc());
+					final String DESC = String.format("(%s;DDDDZ)D", WORLD.getDesc(isObfuscated));
 
 					insnList.add(new VarInsnNode(ALOAD, 1));
 					insnList.add(new VarInsnNode(DLOAD, 2));
@@ -58,7 +58,7 @@ public class CompassTextureTranformer
 					insnList.add(new VarInsnNode(DLOAD, 10));
 					insnList.add(new VarInsnNode(DLOAD, 6));
 					insnList.add(new VarInsnNode(ILOAD, 8));
-					insnList.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(CompassStructureDetection.class), "findStructure", DESC, false));
+					insnList.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(CompassStructureDetection.class), "findHome", DESC, false));
 					insnList.add(new VarInsnNode(DSTORE, 10));
 
 					method.instructions.insert(targetNode, insnList);
