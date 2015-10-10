@@ -1,44 +1,5 @@
 survivaltweaks.invalid.potion=The following potion IDs is invalid: %s
 
-survivaltweaks.config.bed=Effects Cleared by Bed
-survivaltweaks.config.bed.description=Effects with these IDs will be cleared when the player sleeps
-
-survivaltweaks.config.lava=Spawn Lava
-survivaltweaks.config.lava.effect=Spawn lava when Netherrack or Quartz Ore is mined
-
-survivaltweaks.config.burn=Burn Entities
-survivaltweaks.config.burn.effect=Burn entities when they step on Netherrack or Quartz Ore
-
-survivaltweaks.config.pearlEndDamage=No Ender Pearl damage in End
-survivaltweaks.config.pearlEndDamage.effect=Ender Pearls used in the End will cause no fall damage
-
-survivaltweaks.config.enderTeleport=Stronghold Teleport
-survivaltweaks.config.enderTeleport.effect=Teleports a Creative mode player to a Stronghold when they uses the Eye of Ender while sneaking
-
-survivaltweaks.config.pearlCreative=Ender Pearl in Creative
-survivaltweaks.config.pearlCreative.effect=Allow players to use Ender Pearls in Creative mode
-
-survivaltweaks.config.stepAssist=Step Assist
-survivaltweaks.config.stepAssist.effect=Jump potions grant players a step boost
-
-survivaltweaks.config.swordProtection=Sword as Shield
-survivaltweaks.config.swordProtection.effect=Blocking with the sword will cut the damage in half at the cost of durability
-
-survivaltweaks.config.bowPotionBoost=Bow Boost
-survivaltweaks.config.bowPotionBoost.effect=Strength potions allows player to shoot arrows farer  
-
-survivaltweaks.config.sleepHeal=Sleep Restoration
-survivaltweaks.config.sleepHeal.effect=Sleeping will remove all potion effects from the player and heal them by 20 hearts (will reduce hunger by five when it happens)
-
-survivaltweaks.config.armorSwap=Armor Swap
-survivaltweaks.config.armorSwap.effect=Allow armor swapping via right-clicking
-
-survivaltweaks.config.toolBlockPlace=Tools Block Place
-survivaltweaks.config.toolBlockPlace.effect=Tools will be able to place blocks located to the right/left of them in the hotbar
-
-survivaltweaks.config.throwArrow=Arrow Throw
-survivaltweaks.config.throwArrow.effect=Player can shot Arrows without the need for a Bow
-
 survivaltweaks.invalid.argument=Invalid Arguments
 survivaltweaks.invalid.dimension=Invaild ID or Dimension don't exist
 survivaltweaks.invalid.player=Player Not Found

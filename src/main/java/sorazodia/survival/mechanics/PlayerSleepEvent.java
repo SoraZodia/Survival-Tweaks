@@ -39,9 +39,6 @@ public class PlayerSleepEvent
 				player.heal(20F);
 				int hungerReduction = (int)(((player.getHealth() - pervHealth) / 18) * 10);
 				
-				System.out.println(pervHealth);
-				System.out.println(hungerReduction);
-				
 				if (hunger.getFoodLevel() - hungerReduction < 0)
 					hunger.addStats(-hunger.getFoodLevel(), 0);
 				else if (hunger.getFoodLevel() > 0)

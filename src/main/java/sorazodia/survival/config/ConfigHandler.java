@@ -3,7 +3,6 @@ package sorazodia.survival.config;
 import java.util.ArrayList;
 
 import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.config.Configuration;
 import sorazodia.survival.main.SurvivalTweaks;
 import cpw.mods.fml.client.event.ConfigChangedEvent;
@@ -46,23 +45,23 @@ public class ConfigHandler
 
 	public static void syncConfig()
 	{
-		addToIDList(configFile.getStringList(StatCollector.translateToLocal("survivaltweaks.config.bed"), Configuration.CATEGORY_GENERAL, potionList, StatCollector.translateToLocal("survivaltweaks.config.bed.description")));
+		addToIDList(configFile.getStringList("Effects Cleared by Bed", Configuration.CATEGORY_GENERAL, potionList, "Effects with these IDs will be cleared when the player sleeps"));
 		
-		pearlEndDamage = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.pearlEndDamage"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.pearlEndDamage.effect"));
-		enderTeleport = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.enderTeleport"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.enderTeleport.effect"));
-		pearlCreative = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.pearlCreative"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.pearlCreative.effect"));
+		pearlEndDamage = configFile.getBoolean("No Ender Pearl damage in End", Configuration.CATEGORY_GENERAL, true, "Ender Pearls used in the End will cause no fall damage");
+		enderTeleport = configFile.getBoolean("Stronghold Teleport", Configuration.CATEGORY_GENERAL, true, "Teleports a Creative mode player to a Stronghold when they uses the Eye of Ender while sneaking");
+		pearlCreative = configFile.getBoolean("Ender Pearl in Creative", Configuration.CATEGORY_GENERAL, true, "Allow players to use Ender Pearls in Creative mode");
 		
-		stepAssist = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.stepAssist"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.stepAssist.effect"));
-		swordProtection = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.swordProtection"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.swordProtection.effect"));
-		bowPotionBoost = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.bowPotionBoost"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.bowPotionBoost.effect"));
-		sleepHeal = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.sleepHeal"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.sleepHeal.effect"));
-		armorSwap = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.armorSwap"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.armorSwap.effect"));
-		toolBlockPlace = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.toolBlockPlace"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.toolBlockPlace.effect"));
-		throwArrow = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.throwArrow"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.throwArrow.effect"));
+		stepAssist = configFile.getBoolean("Step Assist", Configuration.CATEGORY_GENERAL, true, "Jump potions grant players a step boost");
+		swordProtection = configFile.getBoolean("Sword as Shield", Configuration.CATEGORY_GENERAL, true, "Blocking with the sword will cut the damage in half at the cost of durability");
+		bowPotionBoost = configFile.getBoolean("Bow Boost", Configuration.CATEGORY_GENERAL, true, "Strength potions allows player to shoot arrows farer");
+		sleepHeal = configFile.getBoolean("Sleep Restoration", Configuration.CATEGORY_GENERAL, true, "Sleeping will remove all potion effects from the player and heal them by 20 hearts (will reduce hunger when it happens)");
+		armorSwap = configFile.getBoolean("Armor Swap", Configuration.CATEGORY_GENERAL, true, "Allow armor swapping via right-clicking");
+		toolBlockPlace = configFile.getBoolean("Tools Block Place", Configuration.CATEGORY_GENERAL, true, "Tools will be able to place blocks located to the right/left of them in the hotbar");
+		throwArrow = configFile.getBoolean("Arrow Throw", Configuration.CATEGORY_GENERAL, true, "Player can shot Arrows without the need for a Bow");
 		
-		spawnLava = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.lava"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.lava.effect"));
-		burn = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.burn"), Configuration.CATEGORY_GENERAL, false, StatCollector.translateToLocal("survivaltweaks.config.burn.effect"));
-		netherBlockEffect = configFile.getBoolean(StatCollector.translateToLocal("survivaltweaks.config.netherBlockEffect"), Configuration.CATEGORY_GENERAL, true, StatCollector.translateToLocal("survivaltweaks.config.netherBlockEffect.effect"));
+		spawnLava = configFile.getBoolean("Spawn Lava", Configuration.CATEGORY_GENERAL, true, "Spawn lava when Netherrack or Quartz Ore is mined");
+		burn = configFile.getBoolean("Burn Entities", Configuration.CATEGORY_GENERAL, false, "Burn entities when they step on Netherrack or Quartz Ore");
+		netherBlockEffect = configFile.getBoolean("Nether Block Effect", Configuration.CATEGORY_GENERAL, true, "Breaking certain blocks from the Nether cause the player to get negative potion effect");
 		
 		
 		if (configFile.hasChanged())
