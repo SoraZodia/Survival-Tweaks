@@ -15,20 +15,17 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
-import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.network.play.server.S32PacketConfirmTransaction;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EntityDamageSource;
-import net.minecraft.util.FoodStats;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -39,7 +36,7 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void onEntityAttack(LivingHurtEvent hurtEvent)
 	{
-		if (hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
+		if (ConfigHandler.getSwordProtection() && hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
 		{
 			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
 
@@ -63,37 +60,8 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
-		arrowEvent.charge = (int) calculateDamage(arrowEvent.charge, arrowEvent.entityLiving);
-	}
-
-	@SubscribeEvent
-	public void onSleep(PlayerWakeUpEvent wakeEvent)
-	{
-		EntityPlayer player = wakeEvent.entityPlayer;
-		FoodStats hunger = player.getFoodStats();
-
-		player.curePotionEffects(new ItemStack(Items.milk_bucket));
-
-		for (int id : ConfigHandler.getPotionIDs())
-		{
-			if (player.isPotionActive(id))
-				player.removePotionEffect(id);
-		}
-
-		if (player.getHealth() < player.getMaxHealth())
-		{
-			player.heal(20F);
-
-			if (hunger.getFoodLevel() > 0)
-				hunger.addStats(-10, 0);
-		}
-
-		if (player.worldObj.isRemote)
-		{
-			Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(
-					new S06PacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
-		}
-
+		if (ConfigHandler.getBowPotionBoost())
+			arrowEvent.charge = (int) calculateDamage(arrowEvent.charge, arrowEvent.entityLiving);
 	}
 
 	@SubscribeEvent
@@ -107,13 +75,13 @@ public class PlayerActionEvent
 			Item heldItem = heldStack.getItem();
 			World world = interactEvent.world;
 
-			if (heldItem instanceof ItemArmor)
+			if (ConfigHandler.getArmorSwap() && heldItem instanceof ItemArmor)
 				switchArmor(player, world, heldStack);
 
-			if (heldItem == Items.arrow)
+			if (ConfigHandler.getArrowThrow() && heldItem == Items.arrow)
 				throwArrow(world, player, heldStack);
 
-			if ((heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+			if (ConfigHandler.getToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
 			{
 				int x = interactEvent.x;
 				int y = interactEvent.y;

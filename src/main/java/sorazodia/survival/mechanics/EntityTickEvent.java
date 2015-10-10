@@ -21,7 +21,7 @@ public class EntityTickEvent
 	{
 		EntityLivingBase entity = updateEvent.entityLiving;
 
-		if (entity.getActivePotionEffect(Potion.jump) != null)
+		if (ConfigHandler.getStepAssist() && entity.getActivePotionEffect(Potion.jump) != null)
 		{
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
 

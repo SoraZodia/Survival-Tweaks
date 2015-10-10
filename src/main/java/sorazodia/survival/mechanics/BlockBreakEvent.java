@@ -32,7 +32,8 @@ public class BlockBreakEvent
 		{
 			if (!harvestEvent.isSilkTouching)
 			{
-				if (ConfigHandler.getSpawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(block, heldItem))
+				if (ConfigHandler.getSpawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(
+						block, heldItem))
 				{
 					for (ItemStack drop : harvestEvent.drops)
 					{
@@ -44,51 +45,55 @@ public class BlockBreakEvent
 					world.setBlock(x, y, z, Blocks.flowing_lava);
 					world.setBlockMetadataWithNotify(x, y, z, 8, 2);
 				}
-				if (block == Blocks.nether_wart)
+
+				if (ConfigHandler.getNetherBlockEffect())
 				{
-					float damage = 0;
-					switch (world.difficultySetting)
+					if (block == Blocks.nether_wart)
 					{
-					case PEACEFUL:
-						damage = 1.0F;
-						break;
-					case EASY:
-						damage = 1.0F;
-						break;
-					case NORMAL:
-						damage = 2.0F;
-						break;
-					case HARD:
-						damage = 4.0F;
-						break;
-					default:
-						damage = 2.0F;
-						break;
+						float damage = 0;
+						switch (world.difficultySetting)
+						{
+						case PEACEFUL:
+							damage = 1.0F;
+							break;
+						case EASY:
+							damage = 1.0F;
+							break;
+						case NORMAL:
+							damage = 2.0F;
+							break;
+						case HARD:
+							damage = 4.0F;
+							break;
+						default:
+							damage = 2.0F;
+							break;
+						}
+						player.attackEntityFrom(DamageSource.magic, damage);
 					}
-					player.attackEntityFrom(DamageSource.magic, damage);
-				}
-				if (block == Blocks.soul_sand)
-				{
-					int duration = 0;
-					switch (world.difficultySetting)
+					if (block == Blocks.soul_sand)
 					{
-					case PEACEFUL:
-						duration = 50;
-						break;
-					case EASY:
-						duration = 50;
-						break;
-					case NORMAL:
-						duration = 130;
-						break;
-					case HARD:
-						duration = 260;
-						break;
-					default:
-						duration = 130;
-						break;
+						int duration = 0;
+						switch (world.difficultySetting)
+						{
+						case PEACEFUL:
+							duration = 50;
+							break;
+						case EASY:
+							duration = 50;
+							break;
+						case NORMAL:
+							duration = 130;
+							break;
+						case HARD:
+							duration = 260;
+							break;
+						default:
+							duration = 130;
+							break;
+						}
+						player.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, duration));
 					}
-					player.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, duration));
 				}
 			}
 		}

@@ -36,7 +36,7 @@ public class SurvivalTweaksTranformer implements IClassTransformer
 			if (index == 0 || index == 1)
 				CompassTextureTranformer.tranformCompassTextureClass(node, isObfuscated);
 
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | (transformedName.equals(CLASS_TO_TRANSFORM[2]) ? 0 : ClassWriter.COMPUTE_FRAMES));
+			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 			node.accept(writer);
 
 			return writer.toByteArray();

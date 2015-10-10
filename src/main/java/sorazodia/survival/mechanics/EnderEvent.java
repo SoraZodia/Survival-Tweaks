@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
@@ -18,7 +19,7 @@ public class EnderEvent
 	@SubscribeEvent
 	public void teleInEnd(EnderTeleportEvent enderEvent)
 	{
-		if (enderEvent.entityLiving instanceof EntityPlayer && enderEvent.entityLiving.dimension == 1)
+		if (ConfigHandler.getPearlEndDamage() && enderEvent.entityLiving instanceof EntityPlayer && enderEvent.entityLiving.dimension == 1)
 		{
 			enderEvent.attackDamage = 0;
 		}
@@ -35,10 +36,10 @@ public class EnderEvent
 			Item heldItem = heldStack.getItem();
 			World world = useEvent.world;
 
-			if (heldItem == Items.ender_pearl)
+			if (ConfigHandler.getPearlCreative() && heldItem == Items.ender_pearl)
 				throwPearl(world, player, heldStack);
 
-			if (heldItem == Items.ender_eye)
+			if (ConfigHandler.getEnderTeleport() && heldItem == Items.ender_eye)
 				teleportToStronghold(useEvent.world, player);;
 		}
 

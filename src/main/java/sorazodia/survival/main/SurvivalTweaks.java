@@ -15,6 +15,7 @@ import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
 import sorazodia.survival.mechanics.PlayerActionEvent;
+import sorazodia.survival.mechanics.PlayerSleepEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
 import sorazodia.survival.server.command.DimensionChecker;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -74,7 +75,7 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new BlockBreakEvent());
 		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
 
-		FMLCommonHandler.instance().bus().register(new PlayerActionEvent());
+		FMLCommonHandler.instance().bus().register(new PlayerSleepEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
 
 		log.info("Mod Loaded");

@@ -9,7 +9,7 @@ public class CompassStructureDetection
 	{
 		if (world != null && !bool)
 		{
-			if (world.provider.isHellWorld)
+			if (world.provider.dimensionId == -1)
 			{
 				ChunkCoordinates locator = world.getSpawnPoint();
 
@@ -20,6 +20,14 @@ public class CompassStructureDetection
 					needle = -(cameraDirection * Math.PI / 180 - Math.atan2(X, Z));
 				}
 			}
+			if (world.provider.dimensionId == 1)
+			{
+				double X = 0 - x;
+				double Z = 0 - z;
+				needle = -(cameraDirection * Math.PI / 180 - Math.atan2(X, Z));
+				System.out.println(X);
+			}
+			
 
 		}
 
