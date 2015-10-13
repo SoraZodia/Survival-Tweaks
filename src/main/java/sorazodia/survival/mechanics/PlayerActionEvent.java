@@ -133,7 +133,7 @@ public class PlayerActionEvent
 						AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(
 						world, x, y, z))
 				{
-					SurvivalTweaks.playSound("dig.stone", world, player);
+					SurvivalTweaks.playSound(itemBlock.field_150939_a.stepSound.getBreakSound(), world, player);
 
 					if (!world.isRemote)
 					{
@@ -151,7 +151,7 @@ public class PlayerActionEvent
 				if (targetBlock == Blocks.bedrock)
 					return;
 
-				SurvivalTweaks.playSound("dig.stone", world, player);
+				SurvivalTweaks.playSound(targetBlock.stepSound.getBreakSound(), world, player);
 
 				if (!world.isRemote)
 				{
@@ -175,7 +175,7 @@ public class PlayerActionEvent
 	{
 		for (String classes : harvestItem.getItem().getToolClasses(harvestItem))
 		{
-			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage()))
+			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage() % 16))
 				return true;
 		}
 		return false;
