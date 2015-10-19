@@ -31,6 +31,7 @@ public class ConfigHandler
 	private static boolean armorSwap = true;
 	private static boolean toolBlockPlace = true;
 	private static boolean throwArrow = true;
+	private static boolean doCollision = false;
 	
 	//nether related
 	private static boolean spawnLava = true;
@@ -58,6 +59,7 @@ public class ConfigHandler
 		armorSwap = configFile.getBoolean("Armor Swap", Configuration.CATEGORY_GENERAL, true, "Allow armor swapping via right-clicking");
 		toolBlockPlace = configFile.getBoolean("Tools Block Place", Configuration.CATEGORY_GENERAL, true, "Tools will be able to place blocks located to the right/left of them in the hotbar");
 		throwArrow = configFile.getBoolean("Arrow Throw", Configuration.CATEGORY_GENERAL, true, "Player can shot Arrows without the need for a Bow");
+		doCollision = configFile.getBoolean("Player Collision", Configuration.CATEGORY_GENERAL, false, "Add collision check to the player");
 		
 		spawnLava = configFile.getBoolean("Spawn Lava", Configuration.CATEGORY_GENERAL, true, "Spawn lava when Netherrack or Quartz Ore is mined");
 		burn = configFile.getBoolean("Burn Entities", Configuration.CATEGORY_GENERAL, false, "Burn entities when they step on Netherrack or Quartz Ore");
@@ -170,6 +172,11 @@ public class ConfigHandler
 	public static boolean getArrowThrow()
 	{
 		return throwArrow;
+	}
+	
+	public static boolean getCollision()
+	{
+		return doCollision;
 	}
 
 }

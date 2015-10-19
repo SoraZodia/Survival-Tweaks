@@ -1,13 +1,14 @@
 package sorazodia.survival.mechanics;
 
-import sorazodia.survival.config.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import sorazodia.survival.config.ConfigHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class EntityTickEvent
@@ -21,7 +22,30 @@ public class EntityTickEvent
 	{
 		EntityLivingBase entity = updateEvent.entityLiving;
 
-		if (ConfigHandler.getStepAssist() && entity.getActivePotionEffect(Potion.jump) != null)
+		if (ConfigHandler.getStepAssist())
+			stepAssist(entity);
+
+		if (ConfigHandler.getBurn())
+			burnPlayer(entity);
+
+		if (ConfigHandler.getCollision())
+			entityCollide(entity);
+
+	}
+
+	private void entityCollide(EntityLivingBase entity)
+	{
+		AxisAlignedBB box = entity.boundingBox.expand(0.15, 0.15, 0.15);
+		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
+		{
+			EntityLivingBase living = (EntityLivingBase) o;
+			entity.applyEntityCollision(living);
+		}
+	}
+
+	private void stepAssist(EntityLivingBase entity)
+	{
+		if (entity.getActivePotionEffect(Potion.jump) != null)
 		{
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
 
@@ -40,11 +64,15 @@ public class EntityTickEvent
 				stepAssistBoost = entity.stepHeight;
 			}
 		}
+	}
 
-		if (ConfigHandler.getBurn() && entity.dimension == -1)
+	private void burnPlayer(EntityLivingBase entity)
+	{
+		if (entity.dimension == -1)
 		{
-			World world = updateEvent.entityLiving.worldObj;
-			Block block = world.getBlock((int) entity.posX, (int) entity.posY - 1, (int) entity.posZ);
+			World world = entity.worldObj;
+			Block block = world.getBlock((int) entity.posX, (int) entity.posY - 1,
+					(int) entity.posZ);
 			int burnTime = 5;
 
 			if (entity instanceof EntityPlayer)
@@ -96,7 +124,6 @@ public class EntityTickEvent
 
 			}
 		}
-
 	}
 
 }
