@@ -32,7 +32,7 @@ public class BlockBreakEvent
 		{
 			if (!harvestEvent.isSilkTouching)
 			{
-				if (ConfigHandler.getSpawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(
+				if (ConfigHandler.spawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(
 						block, heldItem))
 				{
 					for (ItemStack drop : harvestEvent.drops)
@@ -46,7 +46,7 @@ public class BlockBreakEvent
 					world.setBlockMetadataWithNotify(x, y, z, 8, 2);
 				}
 
-				if (ConfigHandler.getNetherBlockEffect())
+				if (ConfigHandler.doNetherBlockEffect())
 				{
 					if (block == Blocks.nether_wart)
 					{

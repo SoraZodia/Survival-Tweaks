@@ -34,7 +34,7 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void onEntityAttack(LivingHurtEvent hurtEvent)
 	{
-		if (ConfigHandler.getSwordProtection() && hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
+		if (ConfigHandler.allowSwordProtection() && hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
 		{
 			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
 
@@ -58,7 +58,7 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
-		if (ConfigHandler.getBowPotionBoost())
+		if (ConfigHandler.applyBowPotionBoost())
 			arrowEvent.charge = (int) calculateDamage(arrowEvent.charge, arrowEvent.entityLiving);
 	}
 
@@ -72,23 +72,24 @@ public class PlayerActionEvent
 		int x = interactEvent.x;
 		int y = interactEvent.y;
 		int z = interactEvent.z;
+		int face = interactEvent.face;
 
 		if (player.getCurrentEquippedItem() != null && interactEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
+            
+			if (player.isSneaking() || (!block.hasTileEntity(block.getDamageValue(world, x, y, z)) && !block.onBlockActivated(world, x, y, x, player, face, offset.offsetX, offset.offsetY, offset.offsetZ)))
+			{
+				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
+					switchArmor(player, world, heldStack);
 
-			if (block.onBlockActivated(world, x, y, x, player, interactEvent.face, offset.offsetX, offset.offsetY, offset.offsetZ))
-				return;
+				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
+					throwArrow(world, player, heldStack); 
 
-			if (ConfigHandler.getArmorSwap() && heldItem instanceof ItemArmor)
-				switchArmor(player, world, heldStack);
-
-			if (ConfigHandler.getArrowThrow() && heldItem == Items.arrow)
-				throwArrow(world, player, heldStack);
-
-			if (ConfigHandler.getToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-				placeBlocks(world, player, heldStack, x, y, z, interactEvent.face, offset);
+				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+					placeBlocks(world, player, heldStack, x, y, z, face, offset);
+			}
 		}
 
 	}
@@ -107,7 +108,7 @@ public class PlayerActionEvent
 			if (heldItemIndex - 1 >= 0)
 				toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
 			else
-				toPlace = player.inventory.getStackInSlot(8); //Stops a ArrayOutOfBoundsException... % don't like negatives for some reasons...
+				toPlace = player.inventory.getStackInSlot(8); //Stops a ArrayOutOfBoundsException... % don't like negative
 		}
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)

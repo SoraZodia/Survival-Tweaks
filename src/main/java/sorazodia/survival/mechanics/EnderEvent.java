@@ -19,7 +19,7 @@ public class EnderEvent
 	@SubscribeEvent
 	public void teleInEnd(EnderTeleportEvent enderEvent)
 	{
-		if (ConfigHandler.getPearlEndDamage() && enderEvent.entityLiving instanceof EntityPlayer && enderEvent.entityLiving.dimension == 1)
+		if (ConfigHandler.doPearlEndDamage() && enderEvent.entityLiving instanceof EntityPlayer && enderEvent.entityLiving.dimension == 1)
 		{
 			enderEvent.attackDamage = 0;
 		}
@@ -36,10 +36,10 @@ public class EnderEvent
 			Item heldItem = heldStack.getItem();
 			World world = useEvent.world;
 
-			if (ConfigHandler.getPearlCreative() && heldItem == Items.ender_pearl)
+			if (ConfigHandler.allowPearlCreative() && heldItem == Items.ender_pearl)
 				throwPearl(world, player, heldStack);
 
-			if (ConfigHandler.getEnderTeleport() && heldItem == Items.ender_eye)
+			if (ConfigHandler.doEnderTeleport() && heldItem == Items.ender_eye)
 				teleportToStronghold(useEvent.world, player);;
 		}
 

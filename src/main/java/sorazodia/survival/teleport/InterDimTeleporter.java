@@ -48,27 +48,33 @@ public class InterDimTeleporter extends Teleporter
 
 	private static int getY(int x, int z, int minHeight, int maxHeight, WorldServer worldServer)
 	{
-		int y = (maxHeight + minHeight) /2;
-		Block blockLower = worldServer.getBlock(x, y - 1, z);
-		Block blockUpper = worldServer.getBlock(x, y + 1, z);
+		int y = 70;
+		int tries = maxHeight - minHeight; //The loop should be finished before that amount of loops, since it's doing a binary search
+		Block blockLower;
+		Block blockUpper;
 		
-		if (blockLower != Blocks.air && blockUpper == Blocks.air) //Safe point for player
-			return y + 2;
+		while (minHeight != maxHeight && tries > 0)
+		{
+			y = (maxHeight + minHeight) / 2;
+			blockLower = worldServer.getBlock(x, y - 1, z);
+			blockUpper = worldServer.getBlock(x, y + 1, z);
+			
+			if (blockLower != Blocks.air && blockUpper == Blocks.air) //Safe point for player
+			{	
+				y += 2;
+				break;
+			}
+			
+			if (blockUpper == Blocks.air && blockLower == Blocks.air) //Player is in the air, lower y
+				maxHeight = y;
+			
+			if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too low;
+				minHeight = y;
+			
+			tries--;
+		}
 		
-		if (minHeight == maxHeight)
-			return maxHeight; //Used as a fail-safe
-		
-		if (blockUpper == Blocks.air && blockLower == Blocks.air) //Player is in the air, lower y
-			return getY(x, z, minHeight, y, worldServer);
-		
-		if (blockLower != Blocks.air && blockUpper != Blocks.air) //Player is buried, y too low;
-			return getY(x, z, y, maxHeight, worldServer);
-		
-
-		if (blockLower == Blocks.air && blockUpper != Blocks.air) //Player is in void, y too low;
-			return getY(x, z, y, maxHeight, worldServer);
-		
-		return 70; //Another fail-safe
+		return y;
 	}
 
 	public Double getY()

@@ -109,72 +109,72 @@ public class ConfigHandler
 			joinEvent.player.addChatComponentMessage(new ChatComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
 	}
 
-	public static boolean getSpawnLava()
+	public static boolean spawnLava()
 	{
 		return spawnLava;
 	}
 
-	public static boolean getBurn()
+	public static boolean doBurn()
 	{
 		return burn;
 	}
 
-	public static boolean getPearlEndDamage()
+	public static boolean doPearlEndDamage()
 	{
 		return pearlEndDamage;
 	}
 
-	public static boolean getEnderTeleport()
+	public static boolean doEnderTeleport()
 	{
 		return enderTeleport;
 	}
 	
-	public static boolean getPearlCreative()
+	public static boolean allowPearlCreative()
 	{
 		return pearlCreative;
 	}
 
-	public static boolean getStepAssist()
+	public static boolean applyStepAssist()
 	{
 		return stepAssist;
 	}
 
-	public static boolean getSwordProtection()
+	public static boolean allowSwordProtection()
 	{
 		return swordProtection;
 	}
 
-	public static boolean getBowPotionBoost()
+	public static boolean applyBowPotionBoost()
 	{
 		return bowPotionBoost;
 	}
 
-	public static boolean getSleepHeal()
+	public static boolean doSleepHeal()
 	{
 		return sleepHeal;
 	}
 
-	public static boolean getArmorSwap()
+	public static boolean doArmorSwap()
 	{
 		return armorSwap;
 	}
 
-	public static boolean getToolBlockPlace()
+	public static boolean doToolBlockPlace()
 	{
 		return toolBlockPlace;
 	}
 
-	public static boolean getNetherBlockEffect()
+	public static boolean doNetherBlockEffect()
 	{
 		return netherBlockEffect;
 	}
 	
-	public static boolean getArrowThrow()
+	public static boolean doArrowThrow()
 	{
 		return throwArrow;
 	}
 	
-	public static boolean getCollision()
+	public static boolean doCollision()
 	{
 		return doCollision;
 	}

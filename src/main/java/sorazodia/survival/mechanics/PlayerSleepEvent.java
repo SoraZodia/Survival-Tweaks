@@ -17,7 +17,7 @@ public class PlayerSleepEvent
 	@SubscribeEvent
 	public void onSleep(PlayerTickEvent tickEvent)
 	{
-		if (!ConfigHandler.getSleepHeal())
+		if (!ConfigHandler.doSleepHeal())
 			return;
 		
 		EntityPlayer player = tickEvent.player;

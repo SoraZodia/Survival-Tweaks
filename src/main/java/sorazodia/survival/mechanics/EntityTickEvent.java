@@ -22,20 +22,21 @@ public class EntityTickEvent
 	{
 		EntityLivingBase entity = updateEvent.entityLiving;
 
-		if (ConfigHandler.getStepAssist())
+		if (ConfigHandler.applyStepAssist())
 			stepAssist(entity);
 
-		if (ConfigHandler.getBurn())
+		if (ConfigHandler.doBurn())
 			burnPlayer(entity);
 
-		if (ConfigHandler.getCollision())
+		if (ConfigHandler.doCollision())
 			entityCollide(entity);
 
 	}
 
 	private void entityCollide(EntityLivingBase entity)
 	{
-		AxisAlignedBB box = entity.boundingBox.expand(0.15, 0.15, 0.15);
+		double r = 0.22;
+		AxisAlignedBB box = entity.boundingBox.expand(r, 0.0, r);
 		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
 			EntityLivingBase living = (EntityLivingBase) o;
@@ -71,8 +72,7 @@ public class EntityTickEvent
 		if (entity.dimension == -1)
 		{
 			World world = entity.worldObj;
-			Block block = world.getBlock((int) entity.posX, (int) entity.posY - 1,
-					(int) entity.posZ);
+			Block block = world.getBlock((int) entity.posX, (int) entity.posY - 1, (int) entity.posZ);
 			int burnTime = 5;
 
 			if (entity instanceof EntityPlayer)
