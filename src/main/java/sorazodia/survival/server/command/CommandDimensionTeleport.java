@@ -3,7 +3,7 @@ package sorazodia.survival.server.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -19,25 +19,27 @@ import sorazodia.survival.teleport.InterDimTeleporter;
 
 import com.mojang.authlib.GameProfile;
 
-public class CommandDimensionTeleport extends CommandBase
+public class CommandDimensionTeleport implements ICommand
 {
 	private MinecraftServer mcServer = MinecraftServer.getServer();
+	//private ArrayList<String> commandNames = new ArrayList<>();
+	private static final String NAME = "tpd";
+
+	public CommandDimensionTeleport()
+	{
+		//commandNames.add(NAME);
+		DimensionChecker.clear();
+	}
 
 	@Override
 	public String getCommandName()
 	{
-		return "tpd";
+		return NAME;
 	}
 
 	public static String getName()
 	{
-		return "tpd";
-	}
-
-	@Override
-	public int getRequiredPermissionLevel()
-	{
-		return 2;
+		return NAME;
 	}
 
 	@Override
@@ -51,7 +53,6 @@ public class CommandDimensionTeleport extends CommandBase
 	@Override
 	public void processCommand(ICommandSender sender, String[] args)
 	{
-
 		EntityPlayerMP player;
 		int targetDimension;
 		WorldServer worldServer;
@@ -61,7 +62,7 @@ public class CommandDimensionTeleport extends CommandBase
 		case 1:
 			if (args[0].equals("list"))
 			{
-				String print = listIDs(CommandDimensionTeleport.getCommandSenderAsPlayer(sender));
+				String print = listIDs(CommandDimensionTeleport.getPlayer(sender));
 				sender.addChatMessage(new ChatComponentText(print));
 				break;
 			}
@@ -71,12 +72,12 @@ public class CommandDimensionTeleport extends CommandBase
 
 			targetDimension = Integer.parseInt(args[0]);
 			worldServer = mcServer.worldServerForDimension(targetDimension);
-			player = CommandDimensionTeleport.getCommandSenderAsPlayer(sender);
+			player = CommandDimensionTeleport.getPlayer(sender);
 
 			tranferToDimension(player, worldServer, player.dimension, targetDimension);
 			break;
 		case 2:
-			player = CommandDimensionTeleport.getPlayer(sender, args[0]);
+			player = CommandDimensionTeleport.getPlayer(args[0]);
 
 			if (checkPlayer(sender, player) == false)
 				break;
@@ -92,7 +93,7 @@ public class CommandDimensionTeleport extends CommandBase
 				tranferToDimension(player, worldServer, player.dimension, targetDimension);
 			} else
 			{
-				EntityPlayerMP targetPlayer = CommandDimensionTeleport.getPlayer(sender, args[1]);
+				EntityPlayerMP targetPlayer = CommandDimensionTeleport.getPlayer(args[1]);
 
 				if (targetPlayer == null)
 				{
@@ -103,12 +104,13 @@ public class CommandDimensionTeleport extends CommandBase
 				targetDimension = targetPlayer.dimension;
 				worldServer = mcServer.worldServerForDimension(targetDimension);
 
-				tranferToDimension(player, targetPlayer, worldServer, player.dimension, targetDimension, targetPlayer.posX, targetPlayer.posY + 1, targetPlayer.posZ);
+				tranferToDimension(player, targetPlayer, worldServer, player.dimension, targetDimension, targetPlayer.posX, targetPlayer.posY + 1,
+						targetPlayer.posZ);
 			}
 			break;
 
 		case 3:
-			player = CommandDimensionTeleport.getCommandSenderAsPlayer(sender);
+			player = CommandDimensionTeleport.getPlayer(sender);
 
 			if (checkPlayer(sender, player) == false || !checkDimension(sender, args[0]) || checkInts(args, 1, sender) == false)
 				break;
@@ -122,10 +124,10 @@ public class CommandDimensionTeleport extends CommandBase
 			boolean solo = false;
 
 			if (!SurvivalTweaks.isInteger(args[0]))
-				player = CommandDimensionTeleport.getPlayer(sender, args[0]);
+				player = CommandDimensionTeleport.getPlayer(args[0]);
 			else
 			{
-				player = getCommandSenderAsPlayer(sender);
+				player = getPlayer(sender);
 				solo = true;
 			}
 
@@ -145,11 +147,12 @@ public class CommandDimensionTeleport extends CommandBase
 			if (!solo)
 				tranferToDimension(player, worldServer, player.dimension, targetDimension, Integer.parseInt(args[2]), Integer.parseInt(args[3]));
 			else
-				tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[1]), Double.valueOf(args[2]), Double.parseDouble(args[3]));
+				tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[1]),
+						Double.valueOf(args[2]), Double.parseDouble(args[3]));
 
 			break;
 		case 5:
-			player = CommandDimensionTeleport.getPlayer(sender, args[0]);
+			player = CommandDimensionTeleport.getPlayer(args[0]);
 
 			if (checkPlayer(sender, player) == false || !checkDimension(sender, args[1]) || checkInts(args, 2, sender) == false)
 				break;
@@ -157,7 +160,8 @@ public class CommandDimensionTeleport extends CommandBase
 			targetDimension = Integer.parseInt(args[1]);
 			worldServer = mcServer.worldServerForDimension(targetDimension);
 
-			tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[2]), Double.valueOf(args[3]), Double.parseDouble(args[4]));
+			tranferToDimension(player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[2]), Double.valueOf(args[3]),
+					Double.parseDouble(args[4]));
 
 			break;
 		default:
@@ -165,6 +169,19 @@ public class CommandDimensionTeleport extends CommandBase
 			break;
 		}
 
+	}
+
+	private static EntityPlayerMP getPlayer(ICommandSender sender)
+	{
+		if (sender instanceof EntityPlayerMP)
+			return (EntityPlayerMP) sender;
+		
+		return null;
+	}
+	
+	private static EntityPlayerMP getPlayer(String username)
+	{
+		return MinecraftServer.getServer().getConfigurationManager().func_152612_a(username);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -184,7 +201,7 @@ public class CommandDimensionTeleport extends CommandBase
 
 			for (int x = 0; x < profiles.length; x++)
 			{
-				if (manager.func_152596_g(profiles[x]) && doesStringStartWith(lastLetter, profiles[x].getName()))
+				if (manager.func_152596_g(profiles[x]) && lastLetter.regionMatches(true, 0, profiles[x].getName(), 0, profiles[x].getName().length())) 
 				{
 					argsList.add(profiles[x].getName());
 				}
@@ -218,7 +235,7 @@ public class CommandDimensionTeleport extends CommandBase
 				message = (" [%i: %s" + "(" + StatCollector.translateToLocal("survivaltweaks.command.tpd.list.here") + ")] ");
 
 			name = DimensionChecker.getName(x);
-			
+
 			message = message.replace("%i", String.valueOf(id));
 			message = message.replace("%s", name);
 
@@ -326,6 +343,33 @@ public class CommandDimensionTeleport extends CommandBase
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID, int x, int z)
 	{
 		tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, x, null, z);
+	}
+
+	@Override
+	public int compareTo(Object o)
+	{
+		return NAME.compareTo(((ICommand) o).getCommandName());
+	}
+
+	@Override
+	@SuppressWarnings("rawtypes")
+	public List getCommandAliases()
+	{
+		return null;
+	}
+
+	@Override
+	public boolean canCommandSenderUseCommand(ICommandSender sender)
+	{
+		return sender.canCommandSenderUseCommand(2, NAME);
+	}
+
+	@Override
+	public boolean isUsernameIndex(String[] args, int index)
+	{
+		if (args.length >= 2)
+			return SurvivalTweaks.isInteger(args[0]);
+		return false;
 	}
 
 }

@@ -43,7 +43,6 @@ public class SurvivalTweaks
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
 		preServerEvent.registerServerCommand(new CommandDimensionTeleport());
-		DimensionChecker.clear();
 	}
 
 	@EventHandler
