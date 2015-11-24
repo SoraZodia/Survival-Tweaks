@@ -22,14 +22,7 @@ import com.mojang.authlib.GameProfile;
 public class CommandDimensionTeleport implements ICommand
 {
 	private MinecraftServer mcServer = MinecraftServer.getServer();
-	//private ArrayList<String> commandNames = new ArrayList<>();
 	private static final String NAME = "tpd";
-
-	public CommandDimensionTeleport()
-	{
-		//commandNames.add(NAME);
-		DimensionChecker.clear();
-	}
 
 	@Override
 	public String getCommandName()
@@ -45,9 +38,8 @@ public class CommandDimensionTeleport implements ICommand
 	@Override
 	public String getCommandUsage(ICommandSender sender)
 	{
-		String message = StatCollector.translateToLocal("survivaltweaks.invalid.argument");
 		printUsage(sender);
-		return message;
+		return StatCollector.translateToLocal("survivaltweaks.command.tpd");
 	}
 
 	@Override
@@ -165,6 +157,7 @@ public class CommandDimensionTeleport implements ICommand
 
 			break;
 		default:
+			sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.useage"));
 			printUsage(sender);
 			break;
 		}
@@ -247,7 +240,6 @@ public class CommandDimensionTeleport implements ICommand
 
 	private void printUsage(ICommandSender sender)
 	{
-		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.useage"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.list"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id"));
 		sender.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.id.xz"));
@@ -336,8 +328,12 @@ public class CommandDimensionTeleport implements ICommand
 
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID)
 	{
-		ChunkCoordinates coord = worldServer.getSpawnPoint();
-		tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, coord.posX, null, coord.posZ);
+		ChunkCoordinates coord = player.getBedLocation(targetDimensionID);
+		
+		if (coord == null)
+			coord = worldServer.getSpawnPoint();
+			
+	    tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, coord.posX, null, coord.posZ);
 	}
 
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID, int x, int z)

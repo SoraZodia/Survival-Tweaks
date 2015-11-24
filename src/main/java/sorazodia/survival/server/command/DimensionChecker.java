@@ -13,9 +13,9 @@ public class DimensionChecker
 	private static HashMap<Integer, String> nameList = new HashMap<>();
 
 	@SubscribeEvent
-	public void addWorldID(WorldEvent.Load unloadEvent)
+	public void addWorldID(WorldEvent.Load loadEvent)
 	{
-		add(unloadEvent.world.provider.dimensionId, unloadEvent.world.provider.getDimensionName());
+		add(loadEvent.world.provider.dimensionId, loadEvent.world.provider.getDimensionName());
 	}
 
 	public static int getID(int index)

@@ -43,6 +43,7 @@ public class SurvivalTweaks
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
 		preServerEvent.registerServerCommand(new CommandDimensionTeleport());
+		DimensionChecker.clear();
 	}
 
 	@EventHandler
@@ -73,13 +74,18 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
 		MinecraftForge.EVENT_BUS.register(new BlockBreakEvent());
 		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
-
+		
 		FMLCommonHandler.instance().bus().register(new PlayerSleepEvent());
 		FMLCommonHandler.instance().bus().register(configHandler);
 
 		log.info("Mod Loaded");
 	}
 
+	public static Logger getLogger()
+	{
+		return log;
+	}
+	
 	//From http://stackoverflow.com/questions/237159/whats-the-best-way-to-check-to-see-if-a-string-represents-an-integer-in-java
 	public static boolean isInteger(String arg)
 	{

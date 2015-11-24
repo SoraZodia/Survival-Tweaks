@@ -78,14 +78,14 @@ public class PlayerActionEvent
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
-            
+
 			if (player.isSneaking() || (!block.hasTileEntity(block.getDamageValue(world, x, y, z)) && !block.onBlockActivated(world, x, y, x, player, face, offset.offsetX, offset.offsetY, offset.offsetZ)))
 			{
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
 					switchArmor(player, world, heldStack);
 
 				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
-					throwArrow(world, player, heldStack); 
+					throwArrow(world, player, heldStack);
 
 				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
 					placeBlocks(world, player, heldStack, x, y, z, face, offset);
@@ -116,30 +116,11 @@ public class PlayerActionEvent
 			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
 			Block targetBlock = world.getBlock(x, y, z);
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
+			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null);
 
 			player.swingItem();
 
-			if (!player.isSneaking())
-			{
-				x += offset.offsetX;
-				y += offset.offsetY;
-				z += offset.offsetZ;
-
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(
-						world, x, y, z))
-				{
-					SurvivalTweaks.playSound(itemBlock.field_150939_a.stepSound.getBreakSound(), world, player);
-
-					if (!world.isRemote)
-					{
-						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
-					}
-					if (!isPlayerCreative)
-						inventory.consumeInventoryItem(toPlace.getItem());
-				}
-
-			} else if (heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(
-					x, y, z).getHarvestTool(toPlace.getItemDamage()) == null))
+			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.bedrock)
 					return;
@@ -155,6 +136,23 @@ public class PlayerActionEvent
 				{
 					heldStack.damageItem(1, player);
 					inventory.consumeInventoryItem(toPlace.getItem());
+				}
+			} else
+			{
+				x += offset.offsetX;
+				y += offset.offsetY;
+				z += offset.offsetZ;
+
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, x, y, z))
+				{
+					SurvivalTweaks.playSound(itemBlock.field_150939_a.stepSound.getBreakSound(), world, player);
+
+					if (!world.isRemote)
+					{
+						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+					}
+					if (!isPlayerCreative)
+						inventory.consumeInventoryItem(toPlace.getItem());
 				}
 			}
 		}

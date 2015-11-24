@@ -1,5 +1,6 @@
 package sorazodia.survival.teleport;
 
+import sorazodia.survival.main.SurvivalTweaks;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -72,6 +73,12 @@ public class InterDimTeleporter extends Teleporter
 				minHeight = y;
 			
 			tries--;
+		}
+		
+		if (tries <= 0)
+		{
+			SurvivalTweaks.getLogger().error("Unable to find a good Y value, defaulting to 70!");
+			y = 70;	
 		}
 		
 		return y;
