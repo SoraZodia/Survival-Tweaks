@@ -189,7 +189,7 @@ public class CommandDimensionTeleport implements ICommand
 			ArrayList<String> argsList = new ArrayList<>();
 			GameProfile[] profiles = MinecraftServer.getServer().func_152357_F();
 
-			if (args.length == 1)
+			if (args.length == 1 && lastLetter.regionMatches(true, 0, "list", 0, 4))
 				argsList.add("list");
 
 			for (int x = 0; x < profiles.length; x++)
@@ -290,6 +290,8 @@ public class CommandDimensionTeleport implements ICommand
 
 	private void tranferToDimension(EntityPlayerMP player, EntityPlayerMP targetPlayer, WorldServer worldServer, int currentDimensionID, int targetDimensionID, double x, Double y, double z)
 	{
+		InterDimTeleporter teleporter;
+		
 		if (targetDimensionID == currentDimensionID)
 		{
 			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.invalid.nowhoosh"));
@@ -301,8 +303,6 @@ public class CommandDimensionTeleport implements ICommand
 			player.addChatMessage(new ChatComponentTranslation("survivaltweaks.command.tpd.sameplayer"));
 			return;
 		}
-
-		InterDimTeleporter teleporter;
 
 		if (y != null)
 			teleporter = new InterDimTeleporter(worldServer, x, y, z);
