@@ -19,13 +19,17 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.event.world.BlockEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
+import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class PlayerActionEvent
@@ -118,6 +122,13 @@ public class PlayerActionEvent
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null);
 
+			BlockSnapshot snapshot = new BlockSnapshot(world, x, y, z, Block.getBlockFromItem(toPlace.getItem()), itemBlock.getDamage(toPlace));
+			BlockEvent.PlaceEvent event = new BlockEvent.PlaceEvent(snapshot, targetBlock, player);
+			MinecraftForge.EVENT_BUS.post(event);
+
+			if (event.getResult() == Result.DENY)
+				return;
+
 			player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
@@ -137,7 +148,8 @@ public class PlayerActionEvent
 					heldStack.damageItem(1, player);
 					inventory.consumeInventoryItem(toPlace.getItem());
 				}
-			} else
+			}
+			else
 			{
 				x += offset.offsetX;
 				y += offset.offsetY;
