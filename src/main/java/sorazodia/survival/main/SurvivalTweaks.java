@@ -1,23 +1,9 @@
 package sorazodia.survival.main;
 
 import static sorazodia.survival.main.SurvivalTweaks.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Logger;
 
-import sorazodia.survival.config.ConfigHandler;
-import sorazodia.survival.mechanics.BlockBreakEvent;
-import sorazodia.survival.mechanics.EnderEvent;
-import sorazodia.survival.mechanics.EntityTickEvent;
-import sorazodia.survival.mechanics.PlayerActionEvent;
-import sorazodia.survival.mechanics.PlayerSleepEvent;
-import sorazodia.survival.server.command.CommandDimensionTeleport;
-import sorazodia.survival.server.command.DimensionChecker;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
@@ -26,6 +12,20 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundCategory;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import sorazodia.survival.config.ConfigHandler;
+import sorazodia.survival.mechanics.BlockBreakEvent;
+import sorazodia.survival.mechanics.EnderEvent;
+import sorazodia.survival.mechanics.EntityTickEvent;
+import sorazodia.survival.mechanics.PlayerActionEvent;
+import sorazodia.survival.mechanics.PlayerSleepEvent;
+import sorazodia.survival.server.command.CommandDimensionTeleport;
+import sorazodia.survival.server.command.DimensionChecker;
 
 @Mod(name = NAME, version = VERSION, modid = MODID, guiFactory = GUI_FACTORY)
 public class SurvivalTweaks

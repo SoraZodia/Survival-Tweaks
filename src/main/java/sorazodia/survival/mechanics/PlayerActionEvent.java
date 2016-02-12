@@ -126,7 +126,7 @@ public class PlayerActionEvent
 			BlockEvent.PlaceEvent event = new BlockEvent.PlaceEvent(snapshot, targetBlock, player);
 			MinecraftForge.EVENT_BUS.post(event);
 
-			if (event.getResult() == Result.DENY)
+			if (event.getResult() == Result.DENY || event.isCanceled())
 				return;
 
 			player.swingItem();
