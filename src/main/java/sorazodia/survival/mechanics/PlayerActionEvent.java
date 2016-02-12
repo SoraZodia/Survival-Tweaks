@@ -69,14 +69,14 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void itemRightClick(PlayerInteractEvent interactEvent)
 	{
-		EntityPlayer player = interactEvent.entityPlayer;
-		World world = interactEvent.world;
-		ForgeDirection offset = ForgeDirection.getOrientation(interactEvent.face);
-		Block block = world.getBlock(interactEvent.x, interactEvent.y, interactEvent.z);
 		int x = interactEvent.x;
 		int y = interactEvent.y;
 		int z = interactEvent.z;
 		int face = interactEvent.face;
+		EntityPlayer player = interactEvent.entityPlayer;
+		World world = interactEvent.world;
+		ForgeDirection offset = ForgeDirection.getOrientation(face);
+		Block block = world.getBlock(x, y, z);
 
 		if (player.getCurrentEquippedItem() != null && interactEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
@@ -123,10 +123,12 @@ public class PlayerActionEvent
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null);
 
 			BlockSnapshot snapshot = new BlockSnapshot(world, x, y, z, Block.getBlockFromItem(toPlace.getItem()), itemBlock.getDamage(toPlace));
-			BlockEvent.PlaceEvent event = new BlockEvent.PlaceEvent(snapshot, targetBlock, player);
-			MinecraftForge.EVENT_BUS.post(event);
+			BlockEvent.PlaceEvent blockEvent = new BlockEvent.PlaceEvent(snapshot, targetBlock, player);
+			PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, x, y, z, face, world);
+			MinecraftForge.EVENT_BUS.post(blockEvent);
+			MinecraftForge.EVENT_BUS.post(interactEvent);
 
-			if (event.getResult() == Result.DENY || event.isCanceled())
+			if (blockEvent.getResult() == Result.DENY || blockEvent.isCanceled() || interactEvent.getResult() == Result.DENY || interactEvent.isCanceled())
 				return;
 
 			player.swingItem();
