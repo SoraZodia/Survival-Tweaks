@@ -1,16 +1,17 @@
 package sorazodia.survival.mechanics;
 
-import sorazodia.survival.config.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import sorazodia.survival.config.ConfigHandler;
 
 public class BlockBreakEvent
 {
@@ -22,11 +23,9 @@ public class BlockBreakEvent
 
 		EntityPlayer player = harvestEvent.harvester;
 		ItemStack heldItem = player.getCurrentEquippedItem();
-		Block block = harvestEvent.block;
 		World world = harvestEvent.world;
-		int x = harvestEvent.x;
-		int y = harvestEvent.y;
-		int z = harvestEvent.z;
+		BlockPos blockLocation = harvestEvent.pos;
+		Block block = world.getBlockState(blockLocation).getBlock();
 
 		if (!player.capabilities.isCreativeMode)
 		{
@@ -42,8 +41,7 @@ public class BlockBreakEvent
 						player.entityDropItem(item, item.stackSize);
 					}
 
-					world.setBlock(x, y, z, Blocks.flowing_lava);
-					world.setBlockMetadataWithNotify(x, y, z, 8, 2);
+					world.setBlockState(blockLocation, Blocks.flowing_lava.getDefaultState(), 2);//(x, y, z, 8, 2);
 				}
 
 				if (ConfigHandler.doNetherBlockEffect())
@@ -51,7 +49,7 @@ public class BlockBreakEvent
 					if (block == Blocks.nether_wart)
 					{
 						float damage = 0;
-						switch (world.difficultySetting)
+						switch (world.getDifficulty())
 						{
 						case PEACEFUL:
 							damage = 1.0F;
@@ -74,7 +72,7 @@ public class BlockBreakEvent
 					if (block == Blocks.soul_sand)
 					{
 						int duration = 0;
-						switch (world.difficultySetting)
+						switch (world.getDifficulty())
 						{
 						case PEACEFUL:
 							duration = 50;

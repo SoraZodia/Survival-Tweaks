@@ -1,6 +1,7 @@
 package sorazodia.survival.mechanics;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,20 +18,21 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EntityDamageSource;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class PlayerActionEvent
 {
@@ -69,21 +71,20 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void itemRightClick(PlayerInteractEvent interactEvent)
 	{
-		int x = interactEvent.x;
-		int y = interactEvent.y;
-		int z = interactEvent.z;
-		int face = interactEvent.face;
+		int face = interactEvent.face.ordinal();
 		EntityPlayer player = interactEvent.entityPlayer;
 		World world = interactEvent.world;
-		ForgeDirection offset = ForgeDirection.getOrientation(face);
-		Block block = world.getBlock(x, y, z);
+		EnumFacing offset = interactEvent.face;
+		BlockPos pos = interactEvent.pos;
+		IBlockState blockState = world.getBlockState(interactEvent.pos);
+		Block targetBlock = blockState.getBlock();
 
 		if (player.getCurrentEquippedItem() != null && interactEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
 
-			if (player.isSneaking() || (!block.hasTileEntity(block.getDamageValue(world, x, y, z)) && !block.onBlockActivated(world, x, y, x, player, face, offset.offsetX, offset.offsetY, offset.offsetZ)))
+			if (player.isSneaking() || (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, (float) offset.getFrontOffsetX(), (float) offset.getFrontOffsetY(), (float) offset.getFrontOffsetZ())))
 			{
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
 					switchArmor(player, world, heldStack);
@@ -92,13 +93,13 @@ public class PlayerActionEvent
 					throwArrow(world, player, heldStack);
 
 				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-					placeBlocks(world, player, heldStack, x, y, z, face, offset);
+					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, face, offset);
 			}
 		}
 
 	}
 
-	public void placeBlocks(World world, EntityPlayer player, ItemStack heldStack, int x, int y, int z, int face, ForgeDirection offset)
+	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, int face, EnumFacing offset)
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
@@ -118,19 +119,21 @@ public class PlayerActionEvent
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
-			Block targetBlock = world.getBlock(x, y, z);
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock) || (toPlace.getHasSubtypes() && world.getBlock(x, y, z).getHarvestTool(toPlace.getItemDamage()) == null);
-
-			BlockSnapshot snapshot = new BlockSnapshot(world, x, y, z, Block.getBlockFromItem(toPlace.getItem()), itemBlock.getDamage(toPlace));
-			BlockEvent.PlaceEvent blockEvent = new BlockEvent.PlaceEvent(snapshot, targetBlock, player);
-			PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, x, y, z, face, world);
+			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
+            int x = pos.getX();
+            int y = pos.getY();
+			int z = pos.getZ();
+			
+			BlockSnapshot snapshot = new BlockSnapshot(world, pos, (IBlockState) Block.getBlockFromItem(toPlace.getItem()).getBlockState(), toPlace.getTagCompound());
+			BlockEvent.PlaceEvent blockEvent = new BlockEvent.PlaceEvent(snapshot, blockState, player);
+			PlayerInteractEvent interactEvent = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, pos, offset, world);
 			MinecraftForge.EVENT_BUS.post(blockEvent);
 			MinecraftForge.EVENT_BUS.post(interactEvent);
 
 			if (blockEvent.getResult() == Result.DENY || blockEvent.isCanceled() || interactEvent.getResult() == Result.DENY || interactEvent.isCanceled())
 				return;
-
+			
 			player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
@@ -142,28 +145,27 @@ public class PlayerActionEvent
 
 				if (!world.isRemote)
 				{
-					targetBlock.harvestBlock(world, player, x, y, z, world.getBlockMetadata(x, y, z));
-					itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState));
+					itemBlock.placeBlockAt(toPlace, player, world, pos, offset, x, y, z, blockState);
 				}
 				if (!isPlayerCreative)
 				{
 					heldStack.damageItem(1, player);
 					inventory.consumeInventoryItem(toPlace.getItem());
 				}
-			}
-			else
+			} else
 			{
-				x += offset.offsetX;
-				y += offset.offsetY;
-				z += offset.offsetZ;
+				x += offset.getFrontOffsetX();
+				y += offset.getFrontOffsetY();
+				z += offset.getFrontOffsetZ();
 
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, x, y, z))
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
 				{
-					SurvivalTweaks.playSound(itemBlock.field_150939_a.stepSound.getBreakSound(), world, player);
+					SurvivalTweaks.playSound(itemBlock.getBlock().stepSound.getBreakSound(), world, player);
 
 					if (!world.isRemote)
 					{
-						itemBlock.placeBlockAt(toPlace, player, world, x, y, z, face, (float) x, (float) y, (float) z, toPlace.getItemDamage());
+						itemBlock.placeBlockAt(toPlace, player, world, pos, offset, x, y, z, blockState);
 					}
 					if (!isPlayerCreative)
 						inventory.consumeInventoryItem(toPlace.getItem());
@@ -172,12 +174,11 @@ public class PlayerActionEvent
 		}
 	}
 
-	private static boolean canItemHarvest(ItemStack harvestItem, Block blockToBreak)
+	private static boolean canItemHarvest(ItemStack harvestItem, Block blockToBreak, IBlockState blockState)
 	{
 		for (String classes : harvestItem.getItem().getToolClasses(harvestItem))
 		{
-			if (blockToBreak.isToolEffective(classes, harvestItem.getItemDamage() % 16))
-				return true;
+			return blockToBreak.isToolEffective(classes, blockState);
 		}
 		return false;
 	}

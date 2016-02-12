@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.minecraftforge.event.world.WorldEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class DimensionChecker
 {
@@ -15,7 +15,7 @@ public class DimensionChecker
 	@SubscribeEvent
 	public void addWorldID(WorldEvent.Load loadEvent)
 	{
-		add(loadEvent.world.provider.dimensionId, loadEvent.world.provider.getDimensionName());
+		add(loadEvent.world.provider.getDimensionId(), loadEvent.world.provider.getDimensionName());
 	}
 
 	public static int getID(int index)

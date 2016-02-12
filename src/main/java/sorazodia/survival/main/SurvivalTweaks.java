@@ -1,23 +1,22 @@
 package sorazodia.survival.main;
 
 import static sorazodia.survival.main.SurvivalTweaks.*;
-
-import org.apache.logging.log4j.Logger;
-
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+
+import org.apache.logging.log4j.Logger;
+
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
@@ -74,9 +73,8 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
 		MinecraftForge.EVENT_BUS.register(new BlockBreakEvent());
 		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
-		
-		FMLCommonHandler.instance().bus().register(new PlayerSleepEvent());
-		FMLCommonHandler.instance().bus().register(configHandler);
+		MinecraftForge.EVENT_BUS.register(new PlayerSleepEvent());
+		MinecraftForge.EVENT_BUS.register(configHandler);
 
 		log.info("Mod Loaded");
 	}

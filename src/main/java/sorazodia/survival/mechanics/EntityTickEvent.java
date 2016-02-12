@@ -8,8 +8,8 @@ import net.minecraft.potion.Potion;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class EntityTickEvent
 {
@@ -36,7 +36,7 @@ public class EntityTickEvent
 	private void entityCollide(EntityLivingBase entity)
 	{
 		double r = 0.22;
-		AxisAlignedBB box = entity.boundingBox.expand(r, 0.0, r);
+		AxisAlignedBB box = entity.getCollisionBoundingBox().expand(r, 0.0, r);
 		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
 			EntityLivingBase living = (EntityLivingBase) o;
@@ -80,7 +80,7 @@ public class EntityTickEvent
 				EntityPlayer player = (EntityPlayer) entity;
 				if (!player.capabilities.isCreativeMode && player.getActivePotionEffect(Potion.fireResistance) == null && (block == Blocks.netherrack || block == Blocks.quartz_ore))
 				{
-					switch (world.difficultySetting)
+					switch (world.getDifficulty())
 					{
 					case PEACEFUL:
 						burnTime = 1;
@@ -102,7 +102,7 @@ public class EntityTickEvent
 				}
 			} else if (((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
 			{
-				switch (world.difficultySetting)
+				switch (world.getDifficulty())
 				{
 				case PEACEFUL:
 					burnTime = 1;

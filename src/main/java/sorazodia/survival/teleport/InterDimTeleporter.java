@@ -1,11 +1,12 @@
 package sorazodia.survival.teleport;
 
-import sorazodia.survival.main.SurvivalTweaks;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import sorazodia.survival.main.SurvivalTweaks;
 
 public class InterDimTeleporter extends Teleporter
 {
@@ -17,7 +18,7 @@ public class InterDimTeleporter extends Teleporter
 
 	public InterDimTeleporter(WorldServer worldServer, double x, double z)
 	{
-		this(worldServer, x, getY((int)x, (int)z, worldServer.getSpawnPoint().posY, worldServer.getActualHeight(), worldServer), z);
+		this(worldServer, x, getY((int)x, (int)z, worldServer.getSpawnPoint().getY(), worldServer.getActualHeight(), worldServer), z);
 	}
 	
 	public InterDimTeleporter(WorldServer worldServer, double x, double y, double z)
@@ -28,7 +29,7 @@ public class InterDimTeleporter extends Teleporter
 		this.y = y;
 		this.z = z;
 		
-		if (worldServer.provider.dimensionId == 1) //The End is weird
+		if (worldServer.provider.getDimensionId() == 1) //The End is weird
 		{
 			this.x = 0;
 			this.z = 0;

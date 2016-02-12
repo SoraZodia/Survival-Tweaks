@@ -5,14 +5,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.ChunkPosition;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class EnderEvent
 {
@@ -50,15 +50,17 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode || !player.isSneaking())
 			return;
 
-		ChunkPosition nearestStrongHold = world.findClosestStructure("Stronghold", (int) player.posX, (int) player.posY, (int) player.posZ);
+		BlockPos nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());
+		int x = nearestStrongHold.getX();
+		int y = nearestStrongHold.getY();
+		int z = nearestStrongHold.getZ();
 
 		if (!world.isRemote && nearestStrongHold != null)
 		{
 			//rerun so player won't be inside a wall
-			nearestStrongHold = world.findClosestStructure("Stronghold", nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ);
+			nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());
 			
-			world.getChunkProvider().loadChunk(nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosZ);
-			player.setPositionAndUpdate(nearestStrongHold.chunkPosX, nearestStrongHold.chunkPosY, nearestStrongHold.chunkPosZ);
+			player.setPositionAndUpdate(x, y, z);
 		}
 	}
 	

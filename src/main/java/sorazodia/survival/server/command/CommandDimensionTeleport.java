@@ -7,10 +7,9 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
@@ -174,27 +173,25 @@ public class CommandDimensionTeleport implements ICommand
 	
 	private static EntityPlayerMP getPlayer(String username)
 	{
-		return MinecraftServer.getServer().getConfigurationManager().func_152612_a(username);
+		return MinecraftServer.getServer().getConfigurationManager().getPlayerByUsername(username);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args)
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos blockpos)
 	{
-		ServerConfigurationManager manager = MinecraftServer.getServer().getConfigurationManager();
-
+		ArrayList<String> argsList = new ArrayList<>();
+		
 		if (args.length >= 1)
 		{
 			String lastLetter = args[args.length - 1];
-			ArrayList<String> argsList = new ArrayList<>();
-			GameProfile[] profiles = MinecraftServer.getServer().func_152357_F();
+			GameProfile[] profiles = MinecraftServer.getServer().getGameProfiles();
 
 			if (args.length == 1 && lastLetter.regionMatches(true, 0, "list", 0, 4))
 				argsList.add("list");
 
 			for (int x = 0; x < profiles.length; x++)
 			{
-				if (manager.func_152596_g(profiles[x]) && lastLetter.regionMatches(true, 0, profiles[x].getName(), 0, profiles[x].getName().length())) 
+				if (lastLetter.regionMatches(true, 0, profiles[x].getName(), 0, profiles[x].getName().length())) 
 				{
 					argsList.add(profiles[x].getName());
 				}
@@ -203,7 +200,7 @@ public class CommandDimensionTeleport implements ICommand
 			return argsList;
 		}
 
-		return null;
+		return argsList;
 	}
 
 	private String listIDs(EntityPlayerMP player)
@@ -328,12 +325,12 @@ public class CommandDimensionTeleport implements ICommand
 
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID)
 	{
-		ChunkCoordinates coord = player.getBedLocation(targetDimensionID);
+		BlockPos coord = player.getBedLocation(targetDimensionID);
 		
 		if (coord == null)
 			coord = worldServer.getSpawnPoint();
 			
-	    tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, coord.posX, null, coord.posZ);
+	    tranferToDimension(player, null, worldServer, currentDimensionID, targetDimensionID, coord.getX(), null, coord.getZ());
 	}
 
 	private void tranferToDimension(EntityPlayerMP player, WorldServer worldServer, int currentDimensionID, int targetDimensionID, int x, int z)
@@ -342,16 +339,18 @@ public class CommandDimensionTeleport implements ICommand
 	}
 
 	@Override
-	public int compareTo(Object o)
+	public int compareTo(ICommand command)
 	{
-		return NAME.compareTo(((ICommand) o).getCommandName());
+		return NAME.compareTo(command.getCommandName());
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
-	public List getCommandAliases()
+	public List<String> getCommandAliases()
 	{
-		return null;
+		ArrayList<String> aliases = new ArrayList<>();
+		aliases.add(NAME);
+		
+		return aliases;
 	}
 
 	@Override
