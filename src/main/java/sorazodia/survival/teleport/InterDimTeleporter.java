@@ -3,9 +3,9 @@ package sorazodia.survival.teleport;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
 import sorazodia.survival.main.SurvivalTweaks;
 
 public class InterDimTeleporter extends Teleporter
@@ -38,14 +38,12 @@ public class InterDimTeleporter extends Teleporter
 	}
 
 	@Override
-	public void placeInPortal(Entity entity, double motionX, double motionY, double motionZ, float rotation)
+	public void placeInPortal(Entity entity, float rotation)
 	{
 		worldServer.theChunkProviderServer.loadChunk((int) x, (int) z);
 		entity.setPosition(x, y, z);
 		
-		entity.motionX = motionX;
-		entity.motionY = motionY;
-		entity.motionZ = motionZ;
+		entity.motionX = entity.motionY = entity.motionZ = 0;
 	}
 
 	private static int getY(int x, int z, int minHeight, int maxHeight, WorldServer worldServer)
@@ -54,12 +52,16 @@ public class InterDimTeleporter extends Teleporter
 		int tries = maxHeight - minHeight; //The loop should be finished before that amount of loops, since it's doing a binary search
 		Block blockLower;
 		Block blockUpper;
+		BlockPos upperBound;
+		BlockPos lowerBound;
 		
 		while (minHeight != maxHeight && tries > 0)
 		{
 			y = (maxHeight + minHeight) / 2;
-			blockLower = worldServer.getBlock(x, y - 1, z);
-			blockUpper = worldServer.getBlock(x, y + 1, z);
+			lowerBound = new BlockPos(x, y - 1, z);
+			upperBound = new BlockPos(x, y + 1, z);
+			blockLower = worldServer.getBlockState(lowerBound).getBlock();
+			blockUpper = worldServer.getBlockState(upperBound).getBlock();
 			
 			if (blockLower != Blocks.air && blockUpper == Blocks.air) //Safe point for player
 			{	

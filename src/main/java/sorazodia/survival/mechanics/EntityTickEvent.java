@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -72,7 +73,9 @@ public class EntityTickEvent
 		if (entity.dimension == -1)
 		{
 			World world = entity.worldObj;
-			Block block = world.getBlock((int) entity.posX, (int) entity.posY - 1, (int) entity.posZ);
+			BlockPos entityPos = entity.getPosition();
+			BlockPos ground = new BlockPos(entityPos.getX(), entityPos.getY() - 1, entityPos.getZ());
+			Block block = world.getBlockState(ground).getBlock();
 			int burnTime = 5;
 
 			if (entity instanceof EntityPlayer)

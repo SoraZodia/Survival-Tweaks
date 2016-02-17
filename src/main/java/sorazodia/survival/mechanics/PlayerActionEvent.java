@@ -71,20 +71,25 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void itemRightClick(PlayerInteractEvent interactEvent)
 	{
-		int face = interactEvent.face.ordinal();
 		EntityPlayer player = interactEvent.entityPlayer;
 		World world = interactEvent.world;
 		EnumFacing offset = interactEvent.face;
 		BlockPos pos = interactEvent.pos;
-		IBlockState blockState = world.getBlockState(interactEvent.pos);
-		Block targetBlock = blockState.getBlock();
-
+		IBlockState blockState = null;
+		Block targetBlock = null;
+		
+		if (pos != null)
+		{
+			blockState = world.getBlockState(interactEvent.pos);
+			targetBlock = blockState.getBlock();
+		}
+		
 		if (player.getCurrentEquippedItem() != null && interactEvent.action != Action.LEFT_CLICK_BLOCK)
 		{
 			ItemStack heldStack = player.getCurrentEquippedItem();
 			Item heldItem = heldStack.getItem();
 
-			if (player.isSneaking() || (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, (float) offset.getFrontOffsetX(), (float) offset.getFrontOffsetY(), (float) offset.getFrontOffsetZ())))
+			if (player.isSneaking() || targetBlock == null || (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ())))
 			{
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
 					switchArmor(player, world, heldStack);
@@ -93,13 +98,13 @@ public class PlayerActionEvent
 					throwArrow(world, player, heldStack);
 
 				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, face, offset);
+					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, offset);
 			}
 		}
 
 	}
 
-	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, int face, EnumFacing offset)
+	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset)
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
