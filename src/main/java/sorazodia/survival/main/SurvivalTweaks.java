@@ -10,7 +10,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -59,15 +58,9 @@ public class SurvivalTweaks
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
 		log = preEvent.getModLog();
-		log.info("Initializating...");
-		log.info("Syncing config");
+		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
-	}
-
-	@EventHandler
-	public void init(FMLInitializationEvent initEvent)
-	{
-		log.info("Registering Events");
+		
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());

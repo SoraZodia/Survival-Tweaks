@@ -40,7 +40,7 @@ public class EnderEvent
 				throwPearl(world, player, heldStack);
 
 			if (ConfigHandler.doEnderTeleport() && heldItem == Items.ender_eye)
-				teleportToStronghold(useEvent.world, player);;
+				teleportToStronghold(useEvent.world, player);
 		}
 
 	}
@@ -50,14 +50,14 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode || !player.isSneaking())
 			return;
 
-		BlockPos nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());
-		int x = nearestStrongHold.getX();
-		int y = nearestStrongHold.getY();
-		int z = nearestStrongHold.getZ();
+		BlockPos nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());	
 
 		if (!world.isRemote && nearestStrongHold != null)
 		{
-			//rerun so player won't be inside a wall
+			int x = nearestStrongHold.getX();
+			int y = nearestStrongHold.getY();
+			int z = nearestStrongHold.getZ();
+			
 			nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());
 			
 			player.setPositionAndUpdate(x, y, z);
