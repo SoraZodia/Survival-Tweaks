@@ -5,7 +5,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
@@ -23,12 +22,10 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -89,16 +86,15 @@ public class PlayerActionEvent
 		{
 			Item heldItem = heldStack.getItem();
 			
-			if (player.isSneaking() || !(offset != null && (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))))
+			if (player.isSneaking() || (offset != null && (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))))
 			{
-				
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
 					switchArmor(player, world, heldStack);
 
 				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
 					throwArrow(world, player, heldStack);
 
-				if (offset != null && ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()))
 					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, offset);
 			}
 		}
@@ -110,7 +106,7 @@ public class PlayerActionEvent
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % 9);
-
+       
 		if (!(heldStack.getItem() instanceof ItemTool))
 			return;
 
@@ -124,17 +120,9 @@ public class PlayerActionEvent
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
-			ItemBlock itemBlock = (ItemBlock) toPlace.getItem();
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
-			int x = pos.getX();
-			int y = pos.getY();
-			int z = pos.getZ();
-
-			PlayerInteractEvent interactEvent = ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, world, pos, offset);
-
-			if (interactEvent.isCanceled() || interactEvent.getResult() == Result.DENY)
-				return;
+			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
 			player.swingItem();
 
@@ -148,7 +136,7 @@ public class PlayerActionEvent
 				if (!world.isRemote)
 				{
 					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState));
-					itemBlock.placeBlockAt(toPlace, player, world, pos, offset, x, y, z, blockState);
+					world.setBlockState(pos, heldBlock);
 				}
 				if (!isPlayerCreative)
 				{
@@ -157,18 +145,16 @@ public class PlayerActionEvent
 				}
 			}
 			else
-			{
-				x += offset.getFrontOffsetX();
-				y += offset.getFrontOffsetY();
-				z += offset.getFrontOffsetZ();
-
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
+			{		
+				pos = pos.add(offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ());
+				
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.fromBounds(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
 				{
-					SurvivalTweaks.playSound(itemBlock.getBlock().stepSound.getBreakSound(), world, player);
-
+					SurvivalTweaks.playSound(heldBlock.getBlock().stepSound.getBreakSound(), world, player);
+					
 					if (!world.isRemote)
 					{
-						itemBlock.placeBlockAt(toPlace, player, world, pos, offset, x, y, z, blockState);
+						world.setBlockState(pos, heldBlock);
 					}
 					if (!isPlayerCreative)
 						inventory.consumeInventoryItem(toPlace.getItem());
