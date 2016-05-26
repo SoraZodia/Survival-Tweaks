@@ -86,15 +86,15 @@ public class PlayerActionEvent
 		{
 			Item heldItem = heldStack.getItem();
 			
-			if (player.isSneaking() || (offset != null && (!targetBlock.hasTileEntity(blockState) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))))
+			if (player.isSneaking() || (offset != null && (!targetBlock.hasTileEntity(blockState))))
 			{
-				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
+				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
 					switchArmor(player, world, heldStack);
 
-				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
+				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
 					throwArrow(world, player, heldStack);
 
-				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()))
+				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
 					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, offset);
 			}
 		}
@@ -123,7 +123,7 @@ public class PlayerActionEvent
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-
+			
 			player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
