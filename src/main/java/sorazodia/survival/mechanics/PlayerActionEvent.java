@@ -74,18 +74,20 @@ public class PlayerActionEvent
 		IBlockState blockState = null;
 		Block targetBlock = null;
 		ItemStack heldStack = player.getCurrentEquippedItem();
-		
+
 		if (pos != null)
 		{
 			blockState = world.getBlockState(interactEvent.pos);
 			targetBlock = blockState.getBlock();
 		}
-		
 
-		if (heldStack != null && interactEvent.action != Action.LEFT_CLICK_BLOCK && pos != null)
+		if (heldStack == null)
+			return;
+
+		Item heldItem = heldStack.getItem();
+
+		if (interactEvent.action == Action.RIGHT_CLICK_BLOCK)
 		{
-			Item heldItem = heldStack.getItem();
-			
 			if (player.isSneaking() || (offset != null && (!targetBlock.hasTileEntity(blockState))))
 			{
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
@@ -98,6 +100,14 @@ public class PlayerActionEvent
 					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, offset);
 			}
 		}
+		else if (interactEvent.action == Action.RIGHT_CLICK_AIR)
+		{
+			if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
+				switchArmor(player, world, heldStack);
+
+			if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
+				throwArrow(world, player, heldStack);
+		}
 
 	}
 
@@ -106,7 +116,7 @@ public class PlayerActionEvent
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % 9);
-       
+
 		if (!(heldStack.getItem() instanceof ItemTool))
 			return;
 
@@ -123,7 +133,7 @@ public class PlayerActionEvent
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-			
+
 			player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
@@ -145,13 +155,13 @@ public class PlayerActionEvent
 				}
 			}
 			else
-			{		
+			{
 				pos = pos.add(offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ());
-				
+
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.fromBounds(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
 				{
 					SurvivalTweaks.playSound(heldBlock.getBlock().stepSound.getBreakSound(), world, player);
-					
+
 					if (!world.isRemote)
 					{
 						world.setBlockState(pos, heldBlock);
@@ -183,11 +193,13 @@ public class PlayerActionEvent
 
 		SurvivalTweaks.playSound("random.bow", world, player);
 
-		if (!player.capabilities.isCreativeMode && !world.isRemote)
-			heldItem.stackSize--;
-
 		if (!world.isRemote)
+		{
+			if (!player.capabilities.isCreativeMode)
+				heldItem.stackSize--;
+
 			world.spawnEntityInWorld(arrow);
+		}
 	}
 
 	private void switchArmor(EntityPlayer player, World world, ItemStack heldItem)

@@ -47,16 +47,24 @@ public class EntityTickEvent
 
 	private void stepAssist(EntityLivingBase entity)
 	{
-		if (entity.getActivePotionEffect(Potion.jump) != null)
+		
+		if (entity.getActivePotionEffect(Potion.jump) != null && entity.isSprinting())
 		{
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
 
 			if (hasStepAssist)
 			{
 				entity.stepHeight = assistIncrease + stepAssistBoost;
-			} else
+			}
+			else
 				entity.stepHeight = assistIncrease;
-		} else
+		}
+		else if (entity.getActivePotionEffect(Potion.jump) != null)
+		{
+			entity.stepHeight = 1;
+			assistIncrease = 1;
+		}
+		else
 		{
 			entity.stepHeight -= assistIncrease;
 			assistIncrease = 0;
@@ -66,6 +74,7 @@ public class EntityTickEvent
 				stepAssistBoost = entity.stepHeight;
 			}
 		}
+		
 	}
 
 	private void burnPlayer(EntityLivingBase entity)
@@ -103,7 +112,8 @@ public class EntityTickEvent
 					}
 					player.setFire(burnTime);
 				}
-			} else if (((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
+			}
+			else if (((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
 			{
 				switch (world.getDifficulty())
 				{
@@ -124,7 +134,6 @@ public class EntityTickEvent
 					break;
 				}
 				entity.setFire(burnTime);
-
 			}
 		}
 	}

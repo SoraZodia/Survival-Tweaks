@@ -9,12 +9,25 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 
 public class BlockBreakEvent
 {
+	private Block block = Blocks.air;
+	
+	//Get the block being broken since it will be air when HarvestDropsEvent fires
+	@SubscribeEvent
+	public void blockBreak(BreakEvent breakEvent)
+	{
+		if (breakEvent.getPlayer() != null)
+		{
+			block = breakEvent.state.getBlock();
+		}
+	}
+
 	@SubscribeEvent
 	public void netherHarvest(HarvestDropsEvent harvestEvent)
 	{
@@ -25,14 +38,12 @@ public class BlockBreakEvent
 		ItemStack heldItem = player.getCurrentEquippedItem();
 		World world = harvestEvent.world;
 		BlockPos blockLocation = harvestEvent.pos;
-		Block block = world.getBlockState(blockLocation).getBlock();
 
 		if (!player.capabilities.isCreativeMode)
 		{
 			if (!harvestEvent.isSilkTouching)
 			{
-				if (ConfigHandler.spawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(
-						block, heldItem))
+				if (ConfigHandler.spawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(block, heldItem))
 				{
 					for (ItemStack drop : harvestEvent.drops)
 					{
@@ -41,7 +52,7 @@ public class BlockBreakEvent
 						player.entityDropItem(item, item.stackSize);
 					}
 
-					world.setBlockState(blockLocation, Blocks.flowing_lava.getDefaultState(), 2);//(x, y, z, 8, 2);
+					world.setBlockState(blockLocation, Blocks.flowing_lava.getStateFromMeta(8));//(x, y, z, 8, 2);
 				}
 
 				if (ConfigHandler.doNetherBlockEffect())
