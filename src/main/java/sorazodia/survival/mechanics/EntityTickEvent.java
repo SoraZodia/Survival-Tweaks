@@ -36,8 +36,9 @@ public class EntityTickEvent
 
 	private void entityCollide(EntityLivingBase entity)
 	{
-		double r = 0.22;
-		AxisAlignedBB box = entity.getCollisionBoundingBox().expand(r, 0.0, r);
+		double r = 0.32;
+		
+		AxisAlignedBB box = AxisAlignedBB.fromBounds(entity.posX, entity.posY, entity.posZ, entity.posX + r, entity.posY + r, entity.posZ + r);
 		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
 			EntityLivingBase living = (EntityLivingBase) o;
@@ -47,7 +48,7 @@ public class EntityTickEvent
 
 	private void stepAssist(EntityLivingBase entity)
 	{
-		
+
 		if (entity.getActivePotionEffect(Potion.jump) != null && entity.isSprinting())
 		{
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
@@ -74,12 +75,12 @@ public class EntityTickEvent
 				stepAssistBoost = entity.stepHeight;
 			}
 		}
-		
+
 	}
 
 	private void burnPlayer(EntityLivingBase entity)
 	{
-		if (entity.dimension == -1)
+		if (entity.dimension == -1 && entity.ticksExisted % 50 == 0 && !entity.isAirBorne)
 		{
 			World world = entity.worldObj;
 			BlockPos entityPos = entity.getPosition();
@@ -87,33 +88,7 @@ public class EntityTickEvent
 			Block block = world.getBlockState(ground).getBlock();
 			int burnTime = 5;
 
-			if (entity instanceof EntityPlayer)
-			{
-				EntityPlayer player = (EntityPlayer) entity;
-				if (!player.capabilities.isCreativeMode && player.getActivePotionEffect(Potion.fireResistance) == null && (block == Blocks.netherrack || block == Blocks.quartz_ore))
-				{
-					switch (world.getDifficulty())
-					{
-					case PEACEFUL:
-						burnTime = 1;
-						break;
-					case EASY:
-						burnTime = 1;
-						break;
-					case NORMAL:
-						burnTime = 5;
-						break;
-					case HARD:
-						burnTime = 10;
-						break;
-					default:
-						burnTime = 5;
-						break;
-					}
-					player.setFire(burnTime);
-				}
-			}
-			else if (((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
+		    if ((entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode || !(entity instanceof EntityPlayer)) && ((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
 			{
 				switch (world.getDifficulty())
 				{
