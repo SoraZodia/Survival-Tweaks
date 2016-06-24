@@ -186,15 +186,15 @@ public class PlayerActionEvent
 	{
 		double damage = calculateDamage(4.0, player);
 
-		EntityArrow arrow = new EntityArrow(world, player, (float) calculateDamage(0.5, player));
-		arrow.setDamage(damage);
-
-		player.swingItem();
-
 		SurvivalTweaks.playSound("random.bow", world, player);
-
+		
+		player.swingItem();
+		
 		if (!world.isRemote)
 		{
+			EntityArrow arrow = new EntityArrow(world, player, (float) calculateDamage(0.5, player));
+			arrow.setDamage(damage);
+			
 			if (!player.capabilities.isCreativeMode)
 				heldItem.stackSize--;
 

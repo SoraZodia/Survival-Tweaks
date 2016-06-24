@@ -2,6 +2,7 @@ package sorazodia.survival.config;
 
 import java.util.ArrayList;
 
+import net.minecraft.potion.Potion;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -15,7 +16,7 @@ public class ConfigHandler
 {
 	public static Configuration configFile;
 	private static String[] potionList = {};
-	private static ArrayList<Integer> potionIDs = new ArrayList<>();
+	private static ArrayList<String> potionIDs = new ArrayList<>();
 	private static ArrayList<String> invalidEntry = new ArrayList<>();
 	
 	//ender related
@@ -25,6 +26,7 @@ public class ConfigHandler
 	
 	//player related
 	private static boolean stepAssist = true;
+	private static int stepAssistBoost = -1;
 	private static boolean swordProtection = true;
 	private static boolean bowPotionBoost = true;
 	private static boolean sleepHeal = true;
@@ -53,6 +55,7 @@ public class ConfigHandler
 		pearlCreative = configFile.getBoolean("Ender Pearl in Creative", Configuration.CATEGORY_GENERAL, true, "Allow players to use Ender Pearls in Creative mode");
 		
 		stepAssist = configFile.getBoolean("Step Assist", Configuration.CATEGORY_GENERAL, true, "Jump potions grant players a step boost");
+		stepAssistBoost = configFile.getInt("Step Assist Boost", Configuration.CATEGORY_GENERAL, -1, 1, 500, "Max amount of blocks a player can walk up while having a Jump Boost effect (-1 = Unlimited), will still stack with items that grant step assist");
 		swordProtection = configFile.getBoolean("Sword as Shield", Configuration.CATEGORY_GENERAL, true, "Blocking with the sword will cut the damage in half at the cost of durability");
 		bowPotionBoost = configFile.getBoolean("Bow Boost", Configuration.CATEGORY_GENERAL, true, "Strength potions allows player to shoot arrows farer");
 		sleepHeal = configFile.getBoolean("Sleep Restoration", Configuration.CATEGORY_GENERAL, true, "Sleeping will remove all potion effects from the player and heal them by 20 hearts (will reduce hunger when it happens)");
@@ -70,22 +73,22 @@ public class ConfigHandler
 			configFile.save();
 	}
 
-	private static void addToIDList(String[] stringList)
+	private static void addToIDList(String[] list)
 	{
 		
-		for (int x = 0; x < stringList.length; x++)
+		for (int x = 0; x < list.length; x++)
 		{
-			if(SurvivalTweaks.isInteger(stringList[x]))
-				potionIDs.add(Integer.parseInt(stringList[x]));
+			if(SurvivalTweaks.isInteger(list[x]) || Potion.getPotionFromResourceLocation(list[x]) != null)
+				potionIDs.add(list[x]);
 			else
 			{
-				FMLLog.info("%s is not a valid number", stringList[x]);
-				invalidEntry.add(stringList[x]);
+				FMLLog.info("%s is not a valid entry", list[x]);
+				invalidEntry.add(list[x]);
 			}
 		}
 	}
 	
-	public static ArrayList<Integer> getPotionIDs()
+	public static ArrayList<String> getPotionIDs()
 	{
 		return potionIDs;
 	}
@@ -137,6 +140,11 @@ public class ConfigHandler
 	public static boolean applyStepAssist()
 	{
 		return stepAssist;
+	}
+	
+	public static int getMaxBoost()
+	{
+		return stepAssistBoost;
 	}
 
 	public static boolean allowSwordProtection()

@@ -48,21 +48,22 @@ public class EntityTickEvent
 
 	private void stepAssist(EntityLivingBase entity)
 	{
-
+		
 		if (entity.getActivePotionEffect(Potion.jump) != null && entity.isSprinting())
 		{
 			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
 
+			if (assistIncrease > ConfigHandler.getMaxBoost() && ConfigHandler.getMaxBoost() > -1)
+				assistIncrease = ConfigHandler.getMaxBoost();
+			
 			if (hasStepAssist)
-			{
 				entity.stepHeight = assistIncrease + stepAssistBoost;
-			}
 			else
 				entity.stepHeight = assistIncrease;
 		}
 		else if (entity.getActivePotionEffect(Potion.jump) != null)
 		{
-			entity.stepHeight = 1;
+			entity.stepHeight = 1 + stepAssistBoost;
 			assistIncrease = 1;
 		}
 		else
@@ -73,6 +74,11 @@ public class EntityTickEvent
 			{
 				hasStepAssist = true;
 				stepAssistBoost = entity.stepHeight;
+			}
+			else
+			{
+				hasStepAssist = false;
+				stepAssistBoost = 0;
 			}
 		}
 
