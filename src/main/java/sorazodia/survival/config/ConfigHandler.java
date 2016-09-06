@@ -55,7 +55,7 @@ public class ConfigHandler
 		pearlCreative = configFile.getBoolean("Ender Pearl in Creative", Configuration.CATEGORY_GENERAL, true, "Allow players to use Ender Pearls in Creative mode");
 		
 		stepAssist = configFile.getBoolean("Step Assist", Configuration.CATEGORY_GENERAL, true, "Jump potions grant players a step boost");
-		stepAssistBoost = configFile.getInt("Step Assist Boost", Configuration.CATEGORY_GENERAL, -1, 1, 500, "Max amount of blocks a player can walk up while having a Jump Boost effect (-1 = Unlimited), will still stack with items that grant step assist");
+		stepAssistBoost = configFile.getInt("Step Assist Boost", Configuration.CATEGORY_GENERAL, -1, -1, 500, "Max amount of blocks a player can walk up while having a Jump Boost effect (-1 = Unlimited), will still stack with items that grant step assist");
 		swordProtection = configFile.getBoolean("Sword as Shield", Configuration.CATEGORY_GENERAL, true, "Blocking with the sword will cut the damage in half at the cost of durability");
 		bowPotionBoost = configFile.getBoolean("Bow Boost", Configuration.CATEGORY_GENERAL, true, "Strength potions allows player to shoot arrows farer");
 		sleepHeal = configFile.getBoolean("Sleep Restoration", Configuration.CATEGORY_GENERAL, true, "Sleeping will remove all potion effects from the player and heal them by 20 hearts (will reduce hunger when it happens)");
