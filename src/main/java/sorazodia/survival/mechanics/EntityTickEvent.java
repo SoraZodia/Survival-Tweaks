@@ -4,9 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.potion.Potion;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
+import net.minecraft.init.MobEffects;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -21,7 +21,7 @@ public class EntityTickEvent
 	@SubscribeEvent
 	public void playerUpdate(LivingUpdateEvent updateEvent)
 	{
-		EntityLivingBase entity = updateEvent.entityLiving;
+		EntityLivingBase entity = updateEvent.getEntityLiving();
 
 		if (ConfigHandler.applyStepAssist())
 			stepAssist(entity);
@@ -38,7 +38,7 @@ public class EntityTickEvent
 	{
 		double r = 0.32;
 		
-		AxisAlignedBB box = AxisAlignedBB.fromBounds(entity.posX, entity.posY, entity.posZ, entity.posX + r, entity.posY + r, entity.posZ + r);
+		AxisAlignedBB box = new AxisAlignedBB(entity.posX, entity.posY, entity.posZ, entity.posX + r, entity.posY + r, entity.posZ + r);
 		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
 			EntityLivingBase living = (EntityLivingBase) o;
@@ -49,9 +49,9 @@ public class EntityTickEvent
 	private void stepAssist(EntityLivingBase entity)
 	{
 		
-		if (entity.getActivePotionEffect(Potion.jump) != null && entity.isSprinting())
+		if (entity.getActivePotionEffect(MobEffects.JUMP_BOOST) != null && entity.isSprinting())
 		{
-			assistIncrease = entity.getActivePotionEffect(Potion.jump).getAmplifier() + 1;
+			assistIncrease = entity.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1;
 
 			if (assistIncrease > ConfigHandler.getMaxBoost() && ConfigHandler.getMaxBoost() > -1)
 				assistIncrease = ConfigHandler.getMaxBoost();
@@ -61,7 +61,7 @@ public class EntityTickEvent
 			else
 				entity.stepHeight = assistIncrease;
 		}
-		else if (entity.getActivePotionEffect(Potion.jump) != null)
+		else if (entity.getActivePotionEffect(MobEffects.JUMP_BOOST) != null)
 		{
 			entity.stepHeight = 1 + stepAssistBoost;
 			assistIncrease = 1;
@@ -94,7 +94,7 @@ public class EntityTickEvent
 			Block block = world.getBlockState(ground).getBlock();
 			int burnTime = 5;
 
-		    if ((entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode || !(entity instanceof EntityPlayer)) && ((entity.getActivePotionEffect(Potion.fireResistance) == null || !entity.isImmuneToFire())) && (block == Blocks.netherrack || block == Blocks.quartz_ore))
+		    if ((entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode || !(entity instanceof EntityPlayer)) && ((entity.getActivePotionEffect(MobEffects.FIRE_RESISTANCE) == null || !entity.isImmuneToFire())) && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE))
 			{
 				switch (world.getDifficulty())
 				{

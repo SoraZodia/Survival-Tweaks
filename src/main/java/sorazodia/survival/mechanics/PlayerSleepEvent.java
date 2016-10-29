@@ -1,10 +1,8 @@
 package sorazodia.survival.mechanics;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.S06PacketUpdateHealth;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.FoodStats;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -34,19 +32,19 @@ public class PlayerSleepEvent
 
 		if (player.isPlayerFullyAsleep() && !player.worldObj.isRemote)
 		{
-			player.curePotionEffects(new ItemStack(Items.milk_bucket));
+			player.curePotionEffects(new ItemStack(Items.MILK_BUCKET));
 
 			for (String potion : ConfigHandler.getPotionIDs())
 			{
-				int id = -1;
+				Potion effect = null;
 				
 				if (SurvivalTweaks.isInteger(potion))
-					id = Integer.parseInt(potion);
+					effect = Potion.getPotionById(Integer.parseInt(potion));
 				else
-					id = Potion.getPotionFromResourceLocation(potion).id;
+					effect = Potion.getPotionFromResourceLocation(potion);
 				
-				if (player.isPotionActive(id))
-					player.removePotionEffect(id);
+				if (player.isPotionActive(effect))
+					player.removeActivePotionEffect(effect);
 			}
 
 			if (player.getHealth() < player.getMaxHealth())
@@ -64,10 +62,10 @@ public class PlayerSleepEvent
 			}
 		}
 
-		if (player.worldObj.isRemote && update)
-		{
-			Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(new S06PacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
-		}
+//		if (player.worldObj.isRemote && update)
+//		{
+//			Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(new SPacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
+//		}
 
 	}
 

@@ -3,7 +3,7 @@ package sorazodia.survival.config;
 import java.util.ArrayList;
 
 import net.minecraft.potion.Potion;
-import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLLog;
@@ -101,7 +101,7 @@ public class ConfigHandler
 	@SubscribeEvent
 	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent config)
 	{
-		if (config.modID.equals(SurvivalTweaks.MODID))
+		if (config.getModID().equals(SurvivalTweaks.MODID))
 			syncConfig();
 	}
 	
@@ -109,7 +109,7 @@ public class ConfigHandler
 	public void alertPlayer(PlayerLoggedInEvent joinEvent)
 	{
 		if (invalidEntry.size() > 0)
-			joinEvent.player.addChatComponentMessage(new ChatComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
+			joinEvent.player.addChatComponentMessage(new TextComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
 	}
 
 	public static boolean spawnLava()

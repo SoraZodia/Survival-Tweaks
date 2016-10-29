@@ -3,13 +3,14 @@ package sorazodia.survival.mechanics;
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -19,28 +20,28 @@ public class EnderEvent
 	@SubscribeEvent
 	public void teleInEnd(EnderTeleportEvent enderEvent)
 	{
-		if (ConfigHandler.doPearlEndDamage() && enderEvent.entityLiving instanceof EntityPlayer && enderEvent.entityLiving.dimension == 1)
+		if (ConfigHandler.doPearlEndDamage() && enderEvent.getEntityLiving() instanceof EntityPlayer && enderEvent.getEntityLiving().dimension == 1)
 		{
-			enderEvent.attackDamage = 0;
+			enderEvent.setAttackDamage(0);
 		}
 	}
 	
 	@SubscribeEvent
-	public void itemRightClick(PlayerInteractEvent useEvent)
+	public void itemRightClick(PlayerInteractEvent.RightClickItem useEvent)
 	{
-		EntityPlayer player = useEvent.entityPlayer;
+		EntityPlayer player = useEvent.getEntityPlayer();
 
-		if (player.getCurrentEquippedItem() != null && useEvent.action != Action.LEFT_CLICK_BLOCK)
+		if (useEvent.getItemStack() != null)
 		{
-			ItemStack heldStack = player.getCurrentEquippedItem();
+			ItemStack heldStack = useEvent.getItemStack();
 			Item heldItem = heldStack.getItem();
-			World world = useEvent.world;
+			World world = useEvent.getWorld();
 
-			if (ConfigHandler.allowPearlCreative() && heldItem == Items.ender_pearl)
+			if (ConfigHandler.allowPearlCreative() && heldItem == Items.ENDER_PEARL)
 				throwPearl(world, player, heldStack);
 
-			if (ConfigHandler.doEnderTeleport() && heldItem == Items.ender_eye)
-				teleportToStronghold(useEvent.world, player);
+			if (ConfigHandler.doEnderTeleport() && heldItem == Items.ENDER_EYE)
+				teleportToStronghold(useEvent.getWorld(), player);
 		}
 
 	}
@@ -50,7 +51,7 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode || !player.isSneaking())
 			return;
 
-		BlockPos nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());	
+		BlockPos nearestStrongHold = ((WorldServer)world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition());	
 
 		if (!world.isRemote && nearestStrongHold != null)
 		{
@@ -58,7 +59,7 @@ public class EnderEvent
 			int y = nearestStrongHold.getY();
 			int z = nearestStrongHold.getZ();
 			
-			nearestStrongHold = world.getStrongholdPos("Stronghold", player.getPosition());
+			nearestStrongHold = ((WorldServer)world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition());
 			
 			player.setPositionAndUpdate(x, y, z);
 		}
@@ -69,7 +70,7 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode)
 			return;
 
-		SurvivalTweaks.playSound("random.bow", player.worldObj, player);
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_ENDERPEARL_THROW, player.worldObj, player);
 
 		if (!world.isRemote)
 			world.spawnEntityInWorld(new EntityEnderPearl(world, player));

@@ -9,6 +9,8 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
@@ -17,15 +19,14 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -33,51 +34,52 @@ import sorazodia.survival.main.SurvivalTweaks;
 public class PlayerActionEvent
 {
 
-	@SubscribeEvent
-	public void onEntityAttack(LivingHurtEvent hurtEvent)
-	{
-		if (ConfigHandler.allowSwordProtection() && hurtEvent.entity instanceof EntityPlayer && hurtEvent.source instanceof EntityDamageSource)
-		{
-			EntityPlayer player = (EntityPlayer) hurtEvent.entity;
-
-			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword)
-			{
-
-				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
-				hurtEvent.ammount /= 2;
-
-				if (player.isSneaking())
-				{
-					hurtEvent.ammount = 0;
-					player.knockBack(player, 0, 0, 0);
-					player.swingItem();
-					player.setSneaking(false);
-				}
-			}
-		}
-	}
+//	@SubscribeEvent
+//	public void onEntityAttack(LivingHurtEvent hurtEvent)
+//	{
+//		if (ConfigHandler.allowSwordProtection() && hurtEvent.getEntity() instanceof EntityPlayer && hurtEvent.getSource() instanceof EntityDamageSource)
+//		{
+//			EntityPlayer player = (EntityPlayer) hurtEvent.getEntity();
+//
+//			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword)
+//			{
+//
+//				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
+//				hurtEvent.ammount /= 2;
+//
+//				if (player.isSneaking())
+//				{
+//					hurtEvent.ammount = 0;
+//					player.knockBack(player, 0, 0, 0);
+//					player.swingItem();
+//					player.setSneaking(false);
+//				}
+//			}
+//		}
+//	}
 
 	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
 		if (ConfigHandler.applyBowPotionBoost())
-			arrowEvent.charge = (int) calculateDamage(arrowEvent.charge, arrowEvent.entityLiving);
+			arrowEvent.setCharge((int) calculateDamage(arrowEvent.getCharge(), arrowEvent.getEntityLiving()));
 	}
 
+	//Split to RightClickBlock/Item event future me
 	@SubscribeEvent
 	public void itemRightClick(PlayerInteractEvent interactEvent)
 	{
-		EntityPlayer player = interactEvent.entityPlayer;
-		World world = interactEvent.world;
-		BlockPos pos = interactEvent.pos;
-		EnumFacing offset = interactEvent.face;
+		EntityPlayer player = interactEvent.getEntityPlayer();
+		World world = interactEvent.getWorld();
+		BlockPos pos = interactEvent.getPos();
+		EnumFacing offset = interactEvent.getFace();
 		IBlockState blockState = null;
 		Block targetBlock = null;
 		ItemStack heldStack = player.getCurrentEquippedItem();
 
 		if (pos != null)
 		{
-			blockState = world.getBlockState(interactEvent.pos);
+			blockState = world.getBlockState(interactEvent.getPos());
 			targetBlock = blockState.getBlock();
 		}
 
@@ -93,7 +95,7 @@ public class PlayerActionEvent
 				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
 					switchArmor(player, world, heldStack);
 
-				if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
+				if (ConfigHandler.doArrowThrow() && heldItem == Items.ARROW && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
 					throwArrow(world, player, heldStack);
 
 				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
@@ -138,10 +140,10 @@ public class PlayerActionEvent
 
 			if (player.isSneaking() && canHarvest)
 			{
-				if (targetBlock == Blocks.bedrock)
+				if (targetBlock == Blocks.BEDROCK)
 					return;
 
-				SurvivalTweaks.playSound(targetBlock.stepSound.getBreakSound(), world, player);
+				SurvivalTweaks.playSound(targetBlock.getSoundType().getBreakSound(), world, player);
 
 				if (!world.isRemote)
 				{
@@ -158,9 +160,9 @@ public class PlayerActionEvent
 			{
 				pos = pos.add(offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ());
 
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, AxisAlignedBB.fromBounds(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
 				{
-					SurvivalTweaks.playSound(heldBlock.getBlock().stepSound.getBreakSound(), world, player);
+					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType().getBreakSound(), world, player);
 
 					if (!world.isRemote)
 					{
@@ -186,7 +188,7 @@ public class PlayerActionEvent
 	{
 		double damage = calculateDamage(4.0, player);
 
-		SurvivalTweaks.playSound("random.bow", world, player);
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
 		
 		player.swingItem();
 		
@@ -218,20 +220,20 @@ public class PlayerActionEvent
 		if (!player.capabilities.isCreativeMode)
 			inventory.mainInventory[heldItemIndex] = equipedArmor;
 
-		SurvivalTweaks.playSound("mob.irongolem.throw", world, player);
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_IRONGOLEM_ATTACK, world, player);
 	}
 
 	private double calculateDamage(double damage, EntityLivingBase entity)
 	{
-		if (entity.getActivePotionEffect(Potion.damageBoost) != null)
+		if (entity.getActivePotionEffect(MobEffects.STRENGTH) != null)
 		{
-			PotionEffect strength = entity.getActivePotionEffect(Potion.damageBoost);
+			PotionEffect strength = entity.getActivePotionEffect(MobEffects.STRENGTH);
 
 			damage *= (1.30 * (strength.getAmplifier() + 1));
 		}
-		if (entity.getActivePotionEffect(Potion.weakness) != null)
+		if (entity.getActivePotionEffect(MobEffects.WEAKNESS) != null)
 		{
-			PotionEffect weakness = entity.getActivePotionEffect(Potion.weakness);
+			PotionEffect weakness = entity.getActivePotionEffect(MobEffects.WEAKNESS);
 			double reduction = damage * (0.5 * (weakness.getAmplifier() + 1));
 
 			damage -= reduction;

@@ -15,7 +15,7 @@ public class DimensionChecker
 	@SubscribeEvent
 	public void addWorldID(WorldEvent.Load loadEvent)
 	{
-		add(loadEvent.world.provider.getDimensionId(), loadEvent.world.provider.getDimensionName());
+		add(loadEvent.getWorld().provider.getDimension(), loadEvent.getWorld().provider.getDimensionType().getName());
 	}
 
 	public static int getID(int index)

@@ -2,9 +2,11 @@ package sorazodia.survival.main;
 
 import static sorazodia.survival.main.SurvivalTweaks.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -40,18 +42,9 @@ public class SurvivalTweaks
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
-		preServerEvent.registerServerCommand(new CommandDimensionTeleport());
-		DimensionChecker.clear();
-	}
-
-	@EventHandler
-	public void serverStarted(FMLServerStartedEvent serverInitEvent)
-	{
-		MinecraftServer server = MinecraftServer.getServer();
-
 		if (Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools"))
-			if (server.getCommandManager().getCommands().containsKey(CommandDimensionTeleport.getName()))
-				server.getCommandManager().getCommands().remove(CommandDimensionTeleport.getName());
+			preServerEvent.registerServerCommand(new CommandDimensionTeleport());
+		DimensionChecker.clear();
 	}
 
 	@EventHandler
@@ -60,7 +53,7 @@ public class SurvivalTweaks
 		log = preEvent.getModLog();
 		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
-		
+
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
 		MinecraftForge.EVENT_BUS.register(new EntityTickEvent());
@@ -76,7 +69,7 @@ public class SurvivalTweaks
 	{
 		return log;
 	}
-	
+
 	//From http://stackoverflow.com/questions/237159/whats-the-best-way-to-check-to-see-if-a-string-represents-an-integer-in-java
 	public static boolean isInteger(String arg)
 	{
@@ -107,12 +100,12 @@ public class SurvivalTweaks
 		return true;
 	}
 
-	public static void playSound(String name, World world, EntityPlayer player)
+	public static void playSound(SoundEvent name, World world, EntityPlayer player)
 	{
 		if (world.isRemote)
 			soundLevel = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
-		
-		player.playSound(name, soundLevel, soundLevel);
+
+		world.playSound(null, player.getPosition(), name, SoundCategory.PLAYERS, soundLevel, soundLevel);
 	}
 
 }

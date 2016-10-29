@@ -3,11 +3,11 @@ package sorazodia.survival.mechanics;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
@@ -16,7 +16,7 @@ import sorazodia.survival.config.ConfigHandler;
 
 public class BlockBreakEvent
 {
-	private Block block = Blocks.air;
+	private Block block = Blocks.AIR;
 	
 	//Get the block being broken since it will be air when HarvestDropsEvent fires
 	@SubscribeEvent
@@ -24,40 +24,40 @@ public class BlockBreakEvent
 	{
 		if (breakEvent.getPlayer() != null)
 		{
-			block = breakEvent.state.getBlock();
+			block = breakEvent.getState().getBlock();
 		}
 	}
 
 	@SubscribeEvent
 	public void netherHarvest(HarvestDropsEvent harvestEvent)
 	{
-		if (harvestEvent.harvester == null)
+		if (harvestEvent.getHarvester() == null)
 			return;
 
-		EntityPlayer player = harvestEvent.harvester;
-		ItemStack heldItem = player.getCurrentEquippedItem();
-		World world = harvestEvent.world;
-		BlockPos blockLocation = harvestEvent.pos;
+		EntityPlayer player = harvestEvent.getHarvester();
+		ItemStack heldItem = player.getActiveItemStack();
+		World world = harvestEvent.getWorld();
+		BlockPos blockLocation = harvestEvent.getPos();
 
 		if (!player.capabilities.isCreativeMode)
 		{
-			if (!harvestEvent.isSilkTouching)
+			if (!harvestEvent.isSilkTouching())
 			{
-				if (ConfigHandler.spawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(block, heldItem))
+				if (ConfigHandler.spawnLava() && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE) && heldItem != null && heldItem.getItem().canHarvestBlock(block.getDefaultState()));
 				{
-					for (ItemStack drop : harvestEvent.drops)
+					for (ItemStack drop : harvestEvent.getDrops())
 					{
 						ItemStack item = drop.copy();
 						drop.stackSize = 0;
 						player.entityDropItem(item, item.stackSize);
 					}
 
-					world.setBlockState(blockLocation, Blocks.flowing_lava.getStateFromMeta(8));//(x, y, z, 8, 2);
+					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));//(x, y, z, 8, 2);
 				}
 
 				if (ConfigHandler.doNetherBlockEffect())
 				{
-					if (block == Blocks.nether_wart)
+					if (block == Blocks.NETHER_WART)
 					{
 						float damage = 0;
 						switch (world.getDifficulty())
@@ -80,7 +80,7 @@ public class BlockBreakEvent
 						}
 						player.attackEntityFrom(DamageSource.magic, damage);
 					}
-					if (block == Blocks.soul_sand)
+					if (block == Blocks.SOUL_SAND)
 					{
 						int duration = 0;
 						switch (world.getDifficulty())
@@ -101,7 +101,7 @@ public class BlockBreakEvent
 							duration = 130;
 							break;
 						}
-						player.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, duration));
+						player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration));
 					}
 				}
 			}
