@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.ai.EntityMoveHelper.Action;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -13,20 +14,19 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -65,9 +65,21 @@ public class PlayerActionEvent
 			arrowEvent.setCharge((int) calculateDamage(arrowEvent.getCharge(), arrowEvent.getEntityLiving()));
 	}
 
+	@SubscribeEvent
+	public void itemRightClick(RightClickItem event)
+	{
+		
+	}
+	
+	@SubscribeEvent
+	public void blockRightClick(RightClickBlock event)
+	{
+		
+	}
+	
 	//Split to RightClickBlock/Item event future me
 	@SubscribeEvent
-	public void itemRightClick(PlayerInteractEvent interactEvent)
+	public void itemRightClickd(PlayerInteractEvent interactEvent)
 	{
 		EntityPlayer player = interactEvent.getEntityPlayer();
 		World world = interactEvent.getWorld();
@@ -107,7 +119,7 @@ public class PlayerActionEvent
 			if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
 				switchArmor(player, world, heldStack);
 
-			if (ConfigHandler.doArrowThrow() && heldItem == Items.arrow)
+			if (ConfigHandler.doArrowThrow() && heldItem == Items.ARROW)
 				throwArrow(world, player, heldStack);
 		}
 
@@ -136,7 +148,7 @@ public class PlayerActionEvent
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
-			player.swingItem();
+			//player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
 			{
@@ -147,13 +159,13 @@ public class PlayerActionEvent
 
 				if (!world.isRemote)
 				{
-					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState));
+					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState), heldStack);
 					world.setBlockState(pos, heldBlock);
 				}
 				if (!isPlayerCreative)
 				{
 					heldStack.damageItem(1, player);
-					inventory.consumeInventoryItem(toPlace.getItem());
+					toPlace.stackSize--;
 				}
 			}
 			else
@@ -169,7 +181,7 @@ public class PlayerActionEvent
 						world.setBlockState(pos, heldBlock);
 					}
 					if (!isPlayerCreative)
-						inventory.consumeInventoryItem(toPlace.getItem());
+						toPlace.stackSize--;
 				}
 			}
 		}
@@ -190,11 +202,12 @@ public class PlayerActionEvent
 
 		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
 		
-		player.swingItem();
+		//player.swingItem();
 		
 		if (!world.isRemote)
 		{
-			EntityArrow arrow = new EntityArrow(world, player, (float) calculateDamage(0.5, player));
+			ItemArrow itemArrow = (ItemArrow)heldItem.getItem();
+			EntityArrow arrow = itemArrow.createArrow(world, heldItem, player);
 			arrow.setDamage(damage);
 			
 			if (!player.capabilities.isCreativeMode)
@@ -208,12 +221,12 @@ public class PlayerActionEvent
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = player.inventory.currentItem;
-		int armorIndex = EntityLiving.getArmorPosition(heldItem) - 1;
+		int armorIndex = ((ItemArmor)heldItem.getItem()).armorType.getIndex();
 
-		if (player.getCurrentArmor(armorIndex) == null || heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
+		if (inventory.armorInventory[armorIndex] == null || heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
 			return;
 
-		ItemStack equipedArmor = player.getCurrentArmor(armorIndex);
+		ItemStack equipedArmor = inventory.armorInventory[armorIndex];
 
 		inventory.armorInventory[armorIndex] = heldItem;
 

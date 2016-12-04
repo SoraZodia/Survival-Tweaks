@@ -21,9 +21,6 @@ public class PlayerSleepEvent
 	@SubscribeEvent
 	public void onSleep(PlayerTickEvent tickEvent)
 	{
-
-		boolean update = false;
-
 		if (!ConfigHandler.doSleepHeal())
 			return;
 
@@ -57,15 +54,8 @@ public class PlayerSleepEvent
 					hunger.addStats(-hunger.getFoodLevel(), 0);
 				else if (hunger.getFoodLevel() > 0)
 					hunger.addStats(-hungerReduction, 0);
-
-				update = true;
 			}
 		}
-
-//		if (player.worldObj.isRemote && update)
-//		{
-//			Minecraft.getMinecraft().getNetHandler().handleUpdateHealth(new SPacketUpdateHealth(player.getHealth(), hunger.getFoodLevel(), hunger.getSaturationLevel()));
-//		}
 
 	}
 

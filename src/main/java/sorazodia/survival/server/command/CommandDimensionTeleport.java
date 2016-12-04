@@ -309,7 +309,7 @@ public class CommandDimensionTeleport implements ICommand
 			y = teleporter.getY();
 		}
 
-		//server.getConfigurationManager().transferPlayerToDimension(player, targetDimensionID, teleporter);
+		player.mcServer.getPlayerList().transferPlayerToDimension(player, targetDimensionID, teleporter);
 		
 		if (currentDimensionID == 1)
 		{
@@ -365,12 +365,6 @@ public class CommandDimensionTeleport implements ICommand
 		if (args.length >= 2)
 			return SurvivalTweaks.isInteger(args[0]);
 		return false;
-	}
-	
-	//TODO
-	private void transfer(WorldServer worldServer, EntityPlayerMP player)
-	{
-		
 	}
 
 }
