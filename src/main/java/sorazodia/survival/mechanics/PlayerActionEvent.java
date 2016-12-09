@@ -27,6 +27,7 @@ import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -68,62 +69,46 @@ public class PlayerActionEvent
 	@SubscribeEvent
 	public void itemRightClick(RightClickItem event)
 	{
+		EntityPlayer player = event.getEntityPlayer();
+		World world = event.getWorld();
+		ItemStack heldStack = event.getItemStack();
 		
+		if (heldStack == null)
+			return;
+		
+		if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
+			switchArmor(player, world, heldStack);
+
+		if (ConfigHandler.doArrowThrow() && heldStack.getItem() == Items.ARROW)
+			throwArrow(world, player, heldStack);
 	}
 	
 	@SubscribeEvent
 	public void blockRightClick(RightClickBlock event)
 	{
+		EntityPlayer player = event.getEntityPlayer();
+		ItemStack heldStack = event.getItemStack();
+		World world = event.getWorld();
+		EnumFacing offset = event.getFace();
+		IBlockState blockState = world.getBlockState(event.getPos());
 		
-	}
-	
-	//Split to RightClickBlock/Item event future me
-	@SubscribeEvent
-	public void itemRightClickd(PlayerInteractEvent interactEvent)
-	{
-		EntityPlayer player = interactEvent.getEntityPlayer();
-		World world = interactEvent.getWorld();
-		BlockPos pos = interactEvent.getPos();
-		EnumFacing offset = interactEvent.getFace();
-		IBlockState blockState = null;
-		Block targetBlock = null;
-		ItemStack heldStack = player.getCurrentEquippedItem();
-
-		if (pos != null)
-		{
-			blockState = world.getBlockState(interactEvent.getPos());
-			targetBlock = blockState.getBlock();
-		}
-
 		if (heldStack == null)
 			return;
-
-		Item heldItem = heldStack.getItem();
-
-		if (interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+		
+		if (player.isSneaking() || (offset != null && event.getUseBlock() != Result.ALLOW))
 		{
-			if (player.isSneaking() || (offset != null && (!targetBlock.hasTileEntity(blockState))))
-			{
-				if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
-					switchArmor(player, world, heldStack);
-
-				if (ConfigHandler.doArrowThrow() && heldItem == Items.ARROW && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
-					throwArrow(world, player, heldStack);
-
-				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || heldItem.isDamageable()) && !targetBlock.onBlockActivated(world, pos, blockState, player, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ()))
-					placeBlocks(world, player, blockState, targetBlock, heldStack, pos, offset);
-			}
-		}
-		else if (interactEvent.action == Action.RIGHT_CLICK_AIR)
-		{
-			if (ConfigHandler.doArmorSwap() && heldItem instanceof ItemArmor)
+			if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 				switchArmor(player, world, heldStack);
 
-			if (ConfigHandler.doArrowThrow() && heldItem == Items.ARROW)
+			if (ConfigHandler.doArrowThrow() && heldStack.getItem() == Items.ARROW)
 				throwArrow(world, player, heldStack);
+
+			if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
+				placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset);
 		}
 
 	}
+	
 
 	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset)
 	{
@@ -145,7 +130,7 @@ public class PlayerActionEvent
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock, heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
+			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
 			//player.swingItem();
