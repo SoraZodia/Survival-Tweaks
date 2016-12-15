@@ -23,6 +23,7 @@ public class ConfigHandler
 	private static boolean pearlEndDamage = true;
 	private static boolean enderTeleport = true;
 	private static boolean pearlCreative = true;
+	private static boolean instantTeleport = true;
 	
 	//player related
 	private static boolean stepAssist = true;
@@ -52,11 +53,12 @@ public class ConfigHandler
 		
 		pearlEndDamage = configFile.getBoolean("No Ender Pearl damage in End", Configuration.CATEGORY_GENERAL, true, "Ender Pearls used in the End will cause no fall damage");
 		enderTeleport = configFile.getBoolean("Stronghold Teleport", Configuration.CATEGORY_GENERAL, true, "Teleports a Creative mode player to a Stronghold when they uses the Eye of Ender while sneaking");
-		pearlCreative = configFile.getBoolean("Ender Pearl in Creative", Configuration.CATEGORY_GENERAL, true, "Allow players to use Ender Pearls in Creative mode");
+		pearlCreative = configFile.getBoolean("Ender Pearl in Creative", Configuration.CATEGORY_GENERAL, true, "[Pre 1.9] Allow players to use Ender Pearls in Creative mode\n[1.10+] Allows the removal of the Ender Pearl cooldown outside the End for players in creative mode");
+		instantTeleport = configFile.getBoolean("Instant Pearl Recharge In End", Configuration.CATEGORY_GENERAL, true, "Removes cooldown of Ender Pearl when in the End");
 		
 		stepAssist = configFile.getBoolean("Step Assist", Configuration.CATEGORY_GENERAL, true, "Jump potions grant players a step boost");
 		stepAssistBoost = configFile.getInt("Step Assist Boost", Configuration.CATEGORY_GENERAL, -1, -1, 500, "Max amount of blocks a player can walk up while having a Jump Boost effect (-1 = Unlimited), will still stack with items that grant step assist");
-		swordProtection = configFile.getBoolean("Sword as Shield", Configuration.CATEGORY_GENERAL, true, "Blocking with the sword will cut the damage in half at the cost of durability");
+		swordProtection = configFile.getBoolean("Sword as Shield", Configuration.CATEGORY_GENERAL, true, "[Pre 1.10] Blocking with the sword will cut the damage in half at the cost of durability");
 		bowPotionBoost = configFile.getBoolean("Bow Boost", Configuration.CATEGORY_GENERAL, true, "Strength potions allows player to shoot arrows farer");
 		sleepHeal = configFile.getBoolean("Sleep Restoration", Configuration.CATEGORY_GENERAL, true, "Sleeping will remove all potion effects from the player and heal them by 20 hearts (will reduce hunger when it happens)");
 		armorSwap = configFile.getBoolean("Armor Swap", Configuration.CATEGORY_GENERAL, true, "Allow armor swapping via right-clicking");
@@ -127,6 +129,12 @@ public class ConfigHandler
 		return pearlEndDamage;
 	}
 
+	public static boolean doInstantRecharge()
+	{
+		return instantTeleport;
+	}
+
+	
 	public static boolean doEnderTeleport()
 	{
 		return enderTeleport;

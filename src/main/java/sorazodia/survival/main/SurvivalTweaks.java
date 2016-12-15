@@ -3,8 +3,6 @@ package sorazodia.survival.main;
 import static sorazodia.survival.main.SurvivalTweaks.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -13,7 +11,6 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import org.apache.logging.log4j.Logger;
@@ -42,7 +39,7 @@ public class SurvivalTweaks
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
 	{
-		if (Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools"))
+		if (!(Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools")))
 			preServerEvent.registerServerCommand(new CommandDimensionTeleport());
 		DimensionChecker.clear();
 	}

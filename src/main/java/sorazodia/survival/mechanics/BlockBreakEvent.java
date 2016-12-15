@@ -43,7 +43,7 @@ public class BlockBreakEvent
 		{
 			if (!harvestEvent.isSilkTouching())
 			{
-				if (ConfigHandler.spawnLava() && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE) && heldItem != null && heldItem.getItem().canHarvestBlock(block.getDefaultState()));
+				if (ConfigHandler.spawnLava() && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE) && heldItem != null && heldItem.getItem().canHarvestBlock(block.getDefaultState()))//; <- This little bugger cause all blocks mined to spawn lava regardless of config settings 
 				{
 					for (ItemStack drop : harvestEvent.getDrops())
 					{
@@ -52,7 +52,7 @@ public class BlockBreakEvent
 						player.entityDropItem(item, item.stackSize);
 					}
 
-					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));//(x, y, z, 8, 2);
+					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));
 				}
 
 				if (ConfigHandler.doNetherBlockEffect())

@@ -2,9 +2,7 @@ package sorazodia.survival.mechanics;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityMoveHelper.Action;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -12,10 +10,10 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemShield;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.potion.PotionEffect;
@@ -23,8 +21,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
@@ -60,6 +58,23 @@ public class PlayerActionEvent
 //	}
 
 	@SubscribeEvent
+	public void softenFall(LivingEntityUseItemEvent.Tick event)
+	{
+		
+		if (event.getEntityLiving() instanceof EntityPlayer && event.getItem().getItem() instanceof ItemShield)
+		{
+			EntityPlayer player = (EntityPlayer) event.getEntityLiving();
+			ItemStack shield = event.getItem();
+			if (Math.abs(player.rotationPitch) == 90)
+			{
+				player.motionY /= 1.5;
+				player.fallDistance /= 1.5;
+				shield.damageItem(1, player);
+			}
+		}
+	}
+	
+	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
 		if (ConfigHandler.applyBowPotionBoost())
@@ -75,6 +90,8 @@ public class PlayerActionEvent
 		
 		if (heldStack == null)
 			return;
+		
+		player.swingArm(event.getHand());
 		
 		if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 			switchArmor(player, world, heldStack);
@@ -97,6 +114,8 @@ public class PlayerActionEvent
 		
 		if (player.isSneaking() || (offset != null && event.getUseBlock() != Result.ALLOW))
 		{
+			player.swingArm(event.getHand());
+			
 			if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 				switchArmor(player, world, heldStack);
 
@@ -131,9 +150,9 @@ public class PlayerActionEvent
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
+			
+			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-
-			//player.swingItem();
 
 			if (player.isSneaking() && canHarvest)
 			{
@@ -183,22 +202,29 @@ public class PlayerActionEvent
 
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{
-		double damage = calculateDamage(4.0, player);
-
-		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
+		float damage = (float) calculateDamage(4.0, player);
 		
-		//player.swingItem();
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
 		
 		if (!world.isRemote)
 		{
 			ItemArrow itemArrow = (ItemArrow)heldItem.getItem();
 			EntityArrow arrow = itemArrow.createArrow(world, heldItem, player);
+			
+			arrow.setAim(player, player.rotationPitch, player.rotationYaw, 0, damage/5 , 1);
 			arrow.setDamage(damage);
+			
+			if (player.isPotionActive(MobEffects.STRENGTH))
+				arrow.setIsCritical(true);
 			
 			if (!player.capabilities.isCreativeMode)
 				heldItem.stackSize--;
+			else
+				arrow.pickupStatus = EntityArrow.PickupStatus.DISALLOWED;
 
+			
 			world.spawnEntityInWorld(arrow);
+	
 		}
 	}
 

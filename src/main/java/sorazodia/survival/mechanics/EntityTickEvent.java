@@ -37,7 +37,7 @@ public class EntityTickEvent
 	private void entityCollide(EntityLivingBase entity)
 	{
 		double r = 0.32;
-		
+
 		AxisAlignedBB box = new AxisAlignedBB(entity.posX, entity.posY, entity.posZ, entity.posX + r, entity.posY + r, entity.posZ + r);
 		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
@@ -48,14 +48,14 @@ public class EntityTickEvent
 
 	private void stepAssist(EntityLivingBase entity)
 	{
-		
+
 		if (entity.getActivePotionEffect(MobEffects.JUMP_BOOST) != null && entity.isSprinting())
 		{
 			assistIncrease = entity.getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1;
 
 			if (assistIncrease > ConfigHandler.getMaxBoost() && ConfigHandler.getMaxBoost() > -1)
 				assistIncrease = ConfigHandler.getMaxBoost();
-			
+
 			if (hasStepAssist)
 				entity.stepHeight = assistIncrease + stepAssistBoost;
 			else
@@ -94,7 +94,7 @@ public class EntityTickEvent
 			Block block = world.getBlockState(ground).getBlock();
 			int burnTime = 5;
 
-		    if ((entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode || !(entity instanceof EntityPlayer)) && ((entity.getActivePotionEffect(MobEffects.FIRE_RESISTANCE) == null || !entity.isImmuneToFire())) && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE))
+			if ((entity instanceof EntityPlayer && !((EntityPlayer) entity).capabilities.isCreativeMode || !(entity instanceof EntityPlayer)) && ((entity.getActivePotionEffect(MobEffects.FIRE_RESISTANCE) == null || !entity.isImmuneToFire())) && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE))
 			{
 				switch (world.getDifficulty())
 				{

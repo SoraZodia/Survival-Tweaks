@@ -33,7 +33,7 @@ public class InterDimTeleporter extends Teleporter
 		{
 			this.x = 0;
 			this.z = 0;
-			this.y = getY((int)x, (int)z, 50, 128, worldServer);
+			this.y = getY((int)x, (int)z, 30, 128, worldServer);
 		}
 		
 		if (worldServer.provider.getDimension() == -1) // Cause max height in Nether is 256 but the bedrock ceiling is at 128...
@@ -54,13 +54,13 @@ public class InterDimTeleporter extends Teleporter
 	private static int getY(int x, int z, int minHeight, int maxHeight, WorldServer worldServer)
 	{
 		int y = 70; //dummy value
-		int tries = maxHeight - minHeight; //The loop should be finished before that amount of loops, since it's doing a binary search
+		int tries = maxHeight - minHeight + 100; //The loop should be finished before that amount of loops, 100 just in case
 		Block blockLower;
 		Block blockUpper;
 		BlockPos upperBound;
 		BlockPos lowerBound;
 		
-		while (minHeight != maxHeight && tries > 0)
+		while (minHeight < maxHeight && tries > 0)
 		{
 			y = (maxHeight + minHeight) / 2;
 			lowerBound = new BlockPos(x, y - 1, z);
