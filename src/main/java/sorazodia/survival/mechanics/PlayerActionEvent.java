@@ -1,5 +1,6 @@
 package sorazodia.survival.mechanics;
 
+import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -7,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemArmor;
@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -25,7 +26,6 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
@@ -33,34 +33,9 @@ import sorazodia.survival.main.SurvivalTweaks;
 public class PlayerActionEvent
 {
 
-//	@SubscribeEvent
-//	public void onEntityAttack(LivingHurtEvent hurtEvent)
-//	{
-//		if (ConfigHandler.allowSwordProtection() && hurtEvent.getEntity() instanceof EntityPlayer && hurtEvent.getSource() instanceof EntityDamageSource)
-//		{
-//			EntityPlayer player = (EntityPlayer) hurtEvent.getEntity();
-//
-//			if (player.isUsingItem() && player.inventory.getCurrentItem().getItem() instanceof ItemSword)
-//			{
-//
-//				player.inventory.getCurrentItem().damageItem((int) hurtEvent.ammount, player);
-//				hurtEvent.ammount /= 2;
-//
-//				if (player.isSneaking())
-//				{
-//					hurtEvent.ammount = 0;
-//					player.knockBack(player, 0, 0, 0);
-//					player.swingItem();
-//					player.setSneaking(false);
-//				}
-//			}
-//		}
-//	}
-
 	@SubscribeEvent
 	public void softenFall(LivingEntityUseItemEvent.Tick event)
 	{
-		
 		if (event.getEntityLiving() instanceof EntityPlayer && event.getItem().getItem() instanceof ItemShield)
 		{
 			EntityPlayer player = (EntityPlayer) event.getEntityLiving();
@@ -73,7 +48,7 @@ public class PlayerActionEvent
 			}
 		}
 	}
-	
+
 	@SubscribeEvent
 	public void bowDraw(ArrowLooseEvent arrowEvent)
 	{
@@ -87,19 +62,19 @@ public class PlayerActionEvent
 		EntityPlayer player = event.getEntityPlayer();
 		World world = event.getWorld();
 		ItemStack heldStack = event.getItemStack();
-		
+
 		if (heldStack == null)
 			return;
-		
+
 		player.swingArm(event.getHand());
-		
+
 		if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 			switchArmor(player, world, heldStack);
 
-		if (ConfigHandler.doArrowThrow() && heldStack.getItem() == Items.ARROW)
+		if (ConfigHandler.doArrowThrow() && heldStack.getItem() instanceof ItemArrow)
 			throwArrow(world, player, heldStack);
 	}
-	
+
 	@SubscribeEvent
 	public void blockRightClick(RightClickBlock event)
 	{
@@ -108,49 +83,57 @@ public class PlayerActionEvent
 		World world = event.getWorld();
 		EnumFacing offset = event.getFace();
 		IBlockState blockState = world.getBlockState(event.getPos());
+		Block block = blockState.getBlock(); 
 		
-		if (heldStack == null)
-			return;
-		
-		if (player.isSneaking() || (offset != null && event.getUseBlock() != Result.ALLOW))
+		if (heldStack != null && offset != null && event.getUseItem() != DENY)
 		{
-			player.swingArm(event.getHand());
+		
+			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
+				return;
+						
+			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0,-1,0), blockState, player, player.getActiveHand(), heldStack, offset, 0, 0, 0);
 			
-			if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
-				switchArmor(player, world, heldStack);
+			if (event.getUseBlock() == DENY || !blockActivated)
+			{
+				player.swingArm(event.getHand());
 
-			if (ConfigHandler.doArrowThrow() && heldStack.getItem() == Items.ARROW)
-				throwArrow(world, player, heldStack);
+				if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
+					switchArmor(player, world, heldStack);
 
-			if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
-				placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset);
+				if (ConfigHandler.doArrowThrow() && heldStack.getItem() instanceof ItemArrow)
+					throwArrow(world, player, heldStack);
+
+				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
+					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, event.getHand());
+				
+			}
 		}
 
 	}
-	
 
-	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset)
+	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
-		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % 9);
+		int hotbarLength = InventoryPlayer.getHotbarSize();
+		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % hotbarLength);
 
-		if (!(heldStack.getItem() instanceof ItemTool))
+		if (!(heldStack.getItem() instanceof ItemTool) || (activeHand == EnumHand.OFF_HAND && player.getHeldItemOffhand().getItem() instanceof ItemBlock))
 			return;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
 		{
 			if (heldItemIndex - 1 >= 0)
-				toPlace = player.inventory.getStackInSlot((heldItemIndex - 1) % 9);
+				toPlace = player.inventory.getStackInSlot(heldItemIndex - 1 % hotbarLength);
 			else
-				toPlace = player.inventory.getStackInSlot(8); //Stops a ArrayOutOfBoundsException... % don't like negative
+				toPlace = player.inventory.getStackInSlot(hotbarLength - 1); //Stops a ArrayOutOfBoundsException... % don't like negative
 		}
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
 			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
-			
+
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
@@ -176,7 +159,7 @@ public class PlayerActionEvent
 			{
 				pos = pos.add(offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ());
 
-				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && targetBlock.canPlaceBlockAt(world, pos))
+				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && heldBlock.getBlock().canPlaceBlockAt(world, pos))
 				{
 					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType().getBreakSound(), world, player);
 
@@ -203,28 +186,27 @@ public class PlayerActionEvent
 	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
 	{
 		float damage = (float) calculateDamage(4.0, player);
-		
+
 		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
-		
+
 		if (!world.isRemote)
 		{
-			ItemArrow itemArrow = (ItemArrow)heldItem.getItem();
+			ItemArrow itemArrow = (ItemArrow) heldItem.getItem();
 			EntityArrow arrow = itemArrow.createArrow(world, heldItem, player);
-			
-			arrow.setAim(player, player.rotationPitch, player.rotationYaw, 0, damage/5 , 1);
+
+			arrow.setAim(player, player.rotationPitch, player.rotationYaw, 0, damage / 5, 1);
 			arrow.setDamage(damage);
-			
+
 			if (player.isPotionActive(MobEffects.STRENGTH))
 				arrow.setIsCritical(true);
-			
+
 			if (!player.capabilities.isCreativeMode)
 				heldItem.stackSize--;
 			else
 				arrow.pickupStatus = EntityArrow.PickupStatus.DISALLOWED;
 
-			
 			world.spawnEntityInWorld(arrow);
-	
+
 		}
 	}
 
@@ -232,7 +214,7 @@ public class PlayerActionEvent
 	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = player.inventory.currentItem;
-		int armorIndex = ((ItemArmor)heldItem.getItem()).armorType.getIndex();
+		int armorIndex = ((ItemArmor) heldItem.getItem()).armorType.getIndex();
 
 		if (inventory.armorInventory[armorIndex] == null || heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
 			return;
