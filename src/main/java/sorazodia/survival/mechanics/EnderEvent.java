@@ -36,11 +36,11 @@ public class EnderEvent
 			if (ConfigHandler.doEnderTeleport() && heldItem == Items.ENDER_EYE)
 				teleportToStronghold(event.getWorld(), player);
 			
-			if (((ConfigHandler.allowPearlCreative() && player.capabilities.isCreativeMode) || (ConfigHandler.doInstantRecharge() && player.dimension == 1)) && !player.worldObj.isRemote && heldItem == Items.ENDER_PEARL)
+			if (((ConfigHandler.allowPearlCreative() && player.capabilities.isCreativeMode) || (ConfigHandler.doInstantRecharge() && player.dimension == 1)) && heldItem == Items.ENDER_PEARL)
 			{
 				event.setCanceled(true);
 				heldItem.onItemRightClick(heldStack, event.getWorld(),player, event.getHand());
-				player.getCooldownTracker().removeCooldown(heldItem);
+				player.getCooldownTracker().setCooldown(heldItem, 0);
 				event.setResult(Result.ALLOW);
 			}
 
