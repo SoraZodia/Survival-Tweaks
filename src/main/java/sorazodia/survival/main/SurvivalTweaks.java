@@ -3,6 +3,7 @@ package sorazodia.survival.main;
 import static sorazodia.survival.main.SurvivalTweaks.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -19,6 +20,7 @@ import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
+import sorazodia.survival.mechanics.ParachuteTracker;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.mechanics.PlayerSleepEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
@@ -58,6 +60,8 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepEvent());
 		MinecraftForge.EVENT_BUS.register(configHandler);
+		
+		ParachuteTracker.addParachute(Items.BAKED_POTATO.getUnlocalizedName());
 
 		log.info("Mod Loaded");
 	}

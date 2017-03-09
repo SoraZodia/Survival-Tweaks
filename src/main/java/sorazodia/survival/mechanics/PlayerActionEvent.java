@@ -10,6 +10,7 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBlock;
@@ -27,6 +28,7 @@ import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 
@@ -34,17 +36,36 @@ public class PlayerActionEvent
 {
 
 	@SubscribeEvent
-	public void softenFall(LivingEntityUseItemEvent.Tick event)
+	public void itemUseTick(LivingEntityUseItemEvent.Tick event)
 	{
-		if (event.getEntityLiving() instanceof EntityPlayer && event.getItem().getItem() instanceof ItemShield)
+		if (event.getEntityLiving() instanceof EntityPlayer)
+			softenFall((EntityPlayer) event.getEntityLiving(), event.getItem());
+	}
+
+	@SubscribeEvent
+	public void playerTick(PlayerTickEvent event)
+	{
+		EntityPlayer player = event.player;
+		
+		if (player.getActiveHand() != null && player.getHeldItem(player.getActiveHand()) != null)
 		{
-			EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-			ItemStack shield = event.getItem();
+			ItemStack stack = player.getHeldItem(player.getActiveHand());
+
+			if (stack.getItemUseAction() != EnumAction.BLOCK)
+				softenFall(player, stack);
+		}
+
+	}
+
+	public void softenFall(EntityPlayer player, ItemStack stack)
+	{
+		if (stack.getItem() instanceof ItemShield || ParachuteTracker.isParachute(stack.getUnlocalizedName()))
+		{
 			if (Math.abs(player.rotationPitch) == 90)
 			{
 				player.motionY /= 1.5;
 				player.fallDistance /= 1.5;
-				shield.damageItem(1, player);
+				stack.damageItem(1, player);
 			}
 		}
 	}
@@ -83,16 +104,16 @@ public class PlayerActionEvent
 		World world = event.getWorld();
 		EnumFacing offset = event.getFace();
 		IBlockState blockState = world.getBlockState(event.getPos());
-		Block block = blockState.getBlock(); 
-		
+		Block block = blockState.getBlock();
+
 		if (heldStack != null && offset != null && event.getUseItem() != DENY)
 		{
-		
+
 			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
 				return;
-						
-			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0,-1,0), blockState, player, player.getActiveHand(), heldStack, offset, 0, 0, 0);
-			
+
+			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, player.getActiveHand(), heldStack, offset, 0, 0, 0);
+
 			if (event.getUseBlock() == DENY || !blockActivated)
 			{
 				player.swingArm(event.getHand());
@@ -105,7 +126,7 @@ public class PlayerActionEvent
 
 				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
 					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, event.getHand());
-				
+
 			}
 		}
 
