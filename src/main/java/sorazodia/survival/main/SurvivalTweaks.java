@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 import sorazodia.survival.config.ConfigHandler;
+import sorazodia.survival.io.IO;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
@@ -37,6 +38,8 @@ public class SurvivalTweaks
 	private static ConfigHandler configHandler;
 	private static Logger log;
 	private static float soundLevel = 0;
+	
+	private IO parser;
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
@@ -52,6 +55,7 @@ public class SurvivalTweaks
 		log = preEvent.getModLog();
 		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
+		parser = new IO(preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks");
 
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
@@ -62,6 +66,7 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(configHandler);
 		
 		ParachuteTracker.addParachute(Items.BAKED_POTATO.getUnlocalizedName());
+		parser.read();
 
 		log.info("Mod Loaded");
 	}
