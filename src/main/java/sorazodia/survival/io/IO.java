@@ -25,7 +25,7 @@ public class IO
 			String str;
 
 			if (!dir.exists())
-				dir.mkdir();
+				dir.mkdirs();
 
 			for (File file : dir.listFiles())
 			{
