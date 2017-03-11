@@ -2,25 +2,27 @@ package sorazodia.survival.mechanics;
 
 import java.util.ArrayList;
 
+import net.minecraft.item.Item;
+
 public class ParachuteTracker
 {
-	private static ArrayList<String> items = new ArrayList<>();
+	private final static ArrayList<String> ITEMS = new ArrayList<>();
 	
 	public static void addParachute(String items[])
 	{
 		for (String name:items)
 		{
-			ParachuteTracker.items.add(name);
+			ParachuteTracker.ITEMS.add(name);
 		}
 	}
 	
 	public static void addParachute(String item)
 	{
-			ParachuteTracker.items.add(item);
+			ParachuteTracker.ITEMS.add(item);
 	}
 	
-	public static boolean isParachute(String item)
+	public static boolean isParachute(Item item)
 	{
-		return ParachuteTracker.items.indexOf(item) != -1;
+		return ITEMS.indexOf(Item.getIdFromItem(item)) != -1 || ITEMS.indexOf(item.getUnlocalizedName()) != -1 || ITEMS.indexOf(Item.REGISTRY.getNameForObject(item).toString()) != -1;
 	}
 }

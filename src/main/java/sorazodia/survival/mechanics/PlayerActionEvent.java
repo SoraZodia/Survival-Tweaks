@@ -59,7 +59,7 @@ public class PlayerActionEvent
 
 	public void softenFall(EntityPlayer player, ItemStack stack)
 	{
-		if (stack.getItem() instanceof ItemShield || ParachuteTracker.isParachute(stack.getUnlocalizedName()))
+		if (stack.getItem() instanceof ItemShield || ParachuteTracker.isParachute(stack.getItem()))
 		{
 			if (Math.abs(player.rotationPitch) == 90)
 			{
