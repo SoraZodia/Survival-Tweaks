@@ -118,12 +118,6 @@ public class PlayerActionEvent
 			{
 				player.swingArm(event.getHand());
 
-				if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
-					switchArmor(player, world, heldStack);
-
-				if (ConfigHandler.doArrowThrow() && heldStack.getItem() instanceof ItemArrow)
-					throwArrow(world, player, heldStack);
-
 				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
 					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, event.getHand());
 
