@@ -1,6 +1,9 @@
 package sorazodia.survival.mechanics;
 
 import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
+
+import org.apache.logging.log4j.Level;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -52,7 +55,13 @@ public class PlayerActionEvent
 			ItemStack stack = player.getHeldItem(player.getActiveHand());
 
 			if (stack.getItemUseAction() != EnumAction.BLOCK)
+			{
+				if (player.motionY == -1000)
+					SurvivalTweaks.getLogger().printf(Level.INFO, "[%s] AHHHHHHHHHHHHHHHHH AHHHHHH AHHHHHHHHHHHHHHHHH I BELIEVE I CAN FLYYYYYYY", player.getDisplayName());
+				
+				player.swingProgress = 0.85F;
 				softenFall(player, stack);
+			}
 		}
 
 	}
@@ -61,7 +70,7 @@ public class PlayerActionEvent
 	{
 		if (stack.getItem() instanceof ItemShield || ParachuteTracker.isParachute(stack.getItem()))
 		{
-			if (Math.abs(player.rotationPitch) == 90)
+			if (Math.abs(player.rotationPitch) == 90 && player.motionY <= -0.5)
 			{
 				player.motionY /= 1.5;
 				player.fallDistance /= 1.5;
