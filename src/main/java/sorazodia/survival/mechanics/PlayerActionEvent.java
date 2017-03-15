@@ -54,7 +54,7 @@ public class PlayerActionEvent
 		{
 			ItemStack stack = player.getHeldItem(player.getActiveHand());
 
-			if (stack.getItemUseAction() != EnumAction.BLOCK)
+			if (stack.getItemUseAction() != EnumAction.BLOCK && Math.abs(player.rotationPitch) == 90 && player.motionY <= -0.45)
 			{
 				if (player.motionY == -1000)
 					SurvivalTweaks.getLogger().printf(Level.INFO, "[%s] AHHHHHHHHHHHHHHHHH AHHHHHH AHHHHHHHHHHHHHHHHH I BELIEVE I CAN FLYYYYYYY", player.getDisplayName());
@@ -70,7 +70,7 @@ public class PlayerActionEvent
 	{
 		if (stack.getItem() instanceof ItemShield || ParachuteTracker.isParachute(stack.getItem()))
 		{
-			if (Math.abs(player.rotationPitch) == 90 && player.motionY <= -0.5)
+			if (Math.abs(player.rotationPitch) == 90 && player.motionY <= -0.45)
 			{
 				player.motionY /= 1.5;
 				player.fallDistance /= 1.5;

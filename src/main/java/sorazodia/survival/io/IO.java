@@ -29,6 +29,10 @@ public class IO
 
 			for (File file : dir.listFiles())
 			{
+				
+				if (!file.getName().endsWith(".txt"))
+					return;
+				
 				reader = new BufferedReader(new FileReader(file));
 
 				while ((str = reader.readLine()) != null)
