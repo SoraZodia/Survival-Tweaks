@@ -27,7 +27,7 @@ public class PlayerSleepEvent
 		EntityPlayer player = tickEvent.player;
 		FoodStats hunger = player.getFoodStats();
 
-		if (player.isPlayerFullyAsleep() && !player.worldObj.isRemote)
+		if (player.isPlayerFullyAsleep() && !player.world.isRemote)
 		{
 			player.curePotionEffects(new ItemStack(Items.MILK_BUCKET));
 

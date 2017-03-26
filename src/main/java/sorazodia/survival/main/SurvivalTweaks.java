@@ -3,7 +3,6 @@ package sorazodia.survival.main;
 import static sorazodia.survival.main.SurvivalTweaks.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
@@ -21,7 +20,6 @@ import sorazodia.survival.io.IO;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
-import sorazodia.survival.mechanics.ParachuteTracker;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.mechanics.PlayerSleepEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
@@ -30,7 +28,7 @@ import sorazodia.survival.server.command.DimensionChecker;
 @Mod(name = NAME, version = VERSION, modid = MODID, guiFactory = GUI_FACTORY)
 public class SurvivalTweaks
 {
-	public static final String MODID = "survivalTweaks";
+	public static final String MODID = "survivaltweaks";
 	public static final String VERSION = "3.1.0";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
@@ -64,8 +62,7 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new DimensionChecker());
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepEvent());
 		MinecraftForge.EVENT_BUS.register(configHandler);
-		
-		ParachuteTracker.addParachute(Items.BAKED_POTATO.getUnlocalizedName());
+
 		parser.read();
 
 		log.info("Mod Loaded");
@@ -74,6 +71,11 @@ public class SurvivalTweaks
 	public static Logger getLogger()
 	{
 		return log;
+	}
+	
+	public void debug(String message)
+	{
+		log.debug(message);
 	}
 
 	//From http://stackoverflow.com/questions/237159/whats-the-best-way-to-check-to-see-if-a-string-represents-an-integer-in-java

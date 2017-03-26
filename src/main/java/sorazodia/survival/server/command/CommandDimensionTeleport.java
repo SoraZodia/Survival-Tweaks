@@ -24,18 +24,13 @@ public class CommandDimensionTeleport implements ICommand
 	private static final String NAME = "tpd";
 
 	@Override
-	public String getCommandName()
-	{
-		return NAME;
-	}
-
-	public static String getName()
+	public String getName()
 	{
 		return NAME;
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender)
+	public String getUsage(ICommandSender sender)
 	{
 		printUsage(sender);
 		return I18n.translateToLocal("survivaltweaks.command.tpd");
@@ -54,7 +49,7 @@ public class CommandDimensionTeleport implements ICommand
 			if (args[0].equals("list"))
 			{
 				String print = listIDs(CommandDimensionTeleport.getPlayer(sender));
-				sender.addChatMessage(new TextComponentString(print));
+				sender.sendMessage(new TextComponentString(print));
 				break;
 			}
 
@@ -88,7 +83,7 @@ public class CommandDimensionTeleport implements ICommand
 
 				if (targetPlayer == null)
 				{
-					sender.addChatMessage(new TextComponentTranslation("survivaltweaks.invalid.player"));
+					sender.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.player"));
 					break;
 				}
 
@@ -156,7 +151,7 @@ public class CommandDimensionTeleport implements ICommand
 
 			break;
 		default:
-			sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.useage"));
+			sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.useage"));
 			printUsage(sender);
 			break;
 		}
@@ -177,14 +172,14 @@ public class CommandDimensionTeleport implements ICommand
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos blockpos)
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos blockpos)
 	{
 		ArrayList<String> argsList = new ArrayList<>();
 		
 		if (args.length >= 1)
 		{
 			String lastLetter = args[args.length - 1];
-			GameProfile[] profiles = server.getGameProfiles();
+			GameProfile[] profiles = server.getOnlinePlayerProfiles();
 
 			if (args.length == 1 && lastLetter.regionMatches(true, 0, "list", 0, 4))
 				argsList.add("list");
@@ -237,14 +232,14 @@ public class CommandDimensionTeleport implements ICommand
 
 	private void printUsage(ICommandSender sender)
 	{
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.list"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id.xz"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id.xyz"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id.xz"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id.xyz"));
-		sender.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2p"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.list"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id.xz"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.id.xyz"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id.xz"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2id.xyz"));
+		sender.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.p2p"));
 	}
 
 	private boolean checkInts(String[] args, int i, ICommandSender sender)
@@ -255,7 +250,7 @@ public class CommandDimensionTeleport implements ICommand
 		{
 			if (!SurvivalTweaks.isInteger(args[i]))
 			{
-				sender.addChatMessage(new TextComponentTranslation("survivaltweaks.invalid.number", args[i]));
+				sender.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.number", args[i]));
 				isInt = false;
 			}
 		}
@@ -267,7 +262,7 @@ public class CommandDimensionTeleport implements ICommand
 	{
 		if (player == null)
 		{
-			sender.addChatMessage(new TextComponentTranslation("survivaltweaks.invalid.player"));
+			sender.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.player"));
 			return false;
 		}
 
@@ -278,7 +273,7 @@ public class CommandDimensionTeleport implements ICommand
 	{
 		if (!SurvivalTweaks.isInteger(arg) || !DimensionManager.isDimensionRegistered(Integer.parseInt(arg)))
 		{
-			sender.addChatMessage(new TextComponentTranslation("survivaltweaks.invalid.dimension"));
+			sender.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.dimension"));
 			return false;
 		}
 
@@ -291,13 +286,13 @@ public class CommandDimensionTeleport implements ICommand
 		
 		if (targetDimensionID == currentDimensionID)
 		{
-			player.addChatMessage(new TextComponentTranslation("survivaltweaks.invalid.nowhoosh"));
+			player.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.nowhoosh"));
 			return;
 		}
 
 		if (player.equals(targetPlayer))
 		{
-			player.addChatMessage(new TextComponentTranslation("survivaltweaks.command.tpd.sameplayer"));
+			player.sendMessage(new TextComponentTranslation("survivaltweaks.command.tpd.sameplayer"));
 			return;
 		}
 
@@ -314,7 +309,7 @@ public class CommandDimensionTeleport implements ICommand
 		if (currentDimensionID == 1)
 		{
 			player.setPositionAndUpdate(x, y, z);
-			worldServer.spawnEntityInWorld(player);
+			worldServer.spawnEntity(player);
 			worldServer.updateEntityWithOptionalForce(player, false);
 		} else if (targetPlayer != null)
 		{
@@ -341,11 +336,11 @@ public class CommandDimensionTeleport implements ICommand
 	@Override
 	public int compareTo(ICommand command)
 	{
-		return NAME.compareTo(command.getCommandName());
+		return NAME.compareTo(command.getName());
 	}
 
 	@Override
-	public List<String> getCommandAliases()
+	public List<String> getAliases()
 	{
 		ArrayList<String> aliases = new ArrayList<>();
 		aliases.add(NAME);
@@ -356,7 +351,7 @@ public class CommandDimensionTeleport implements ICommand
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender)
 	{
-		return sender.canCommandSenderUseCommand(2, NAME);
+		return sender.canUseCommand(2, NAME);
 	}
 
 	@Override
@@ -366,5 +361,6 @@ public class CommandDimensionTeleport implements ICommand
 			return SurvivalTweaks.isInteger(args[0]);
 		return false;
 	}
+
 
 }

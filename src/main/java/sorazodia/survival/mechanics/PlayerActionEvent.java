@@ -1,9 +1,6 @@
 package sorazodia.survival.mechanics;
 
 import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
-
-import org.apache.logging.log4j.Level;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -32,6 +29,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBloc
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+
+import org.apache.logging.log4j.Level;
+
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 
@@ -121,7 +121,7 @@ public class PlayerActionEvent
 			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
 				return;
 
-			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, player.getActiveHand(), heldStack, offset, 0, 0, 0);
+			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, player.getActiveHand(), offset, 0, 0, 0);
 
 			if (event.getUseBlock() == DENY || !blockActivated)
 			{
@@ -160,13 +160,13 @@ public class PlayerActionEvent
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-
+			
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
 					return;
 
-				SurvivalTweaks.playSound(targetBlock.getSoundType().getBreakSound(), world, player);
+				SurvivalTweaks.playSound(targetBlock.getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
 
 				if (!world.isRemote)
 				{
@@ -176,7 +176,7 @@ public class PlayerActionEvent
 				if (!isPlayerCreative)
 				{
 					heldStack.damageItem(1, player);
-					toPlace.stackSize--;
+					toPlace.setCount(toPlace.getCount() - 1);
 				}
 			}
 			else
@@ -185,14 +185,16 @@ public class PlayerActionEvent
 
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && heldBlock.getBlock().canPlaceBlockAt(world, pos))
 				{
-					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType().getBreakSound(), world, player);
+					
+					
+					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
 
 					if (!world.isRemote)
 					{
 						world.setBlockState(pos, heldBlock);
 					}
 					if (!isPlayerCreative)
-						toPlace.stackSize--;
+						toPlace.setCount(toPlace.getCount() - 1);
 				}
 			}
 		}
@@ -225,11 +227,11 @@ public class PlayerActionEvent
 				arrow.setIsCritical(true);
 
 			if (!player.capabilities.isCreativeMode)
-				heldItem.stackSize--;
+				heldItem.setCount(heldItem.getCount() - 1);
 			else
 				arrow.pickupStatus = EntityArrow.PickupStatus.DISALLOWED;
 
-			world.spawnEntityInWorld(arrow);
+			world.spawnEntity(arrow);
 
 		}
 	}
@@ -240,15 +242,15 @@ public class PlayerActionEvent
 		int heldItemIndex = player.inventory.currentItem;
 		int armorIndex = ((ItemArmor) heldItem.getItem()).armorType.getIndex();
 
-		if (inventory.armorInventory[armorIndex] == null || heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
+		if (heldItem.getItem().getUnlocalizedName().equals("item.openblocks.sleepingbag")) //Bandage fix for now
 			return;
 
-		ItemStack equipedArmor = inventory.armorInventory[armorIndex];
+		ItemStack equipedArmor = inventory.armorInventory.get(armorIndex);
 
-		inventory.armorInventory[armorIndex] = heldItem;
+		inventory.armorInventory.set(armorIndex, heldItem);
 
 		if (!player.capabilities.isCreativeMode)
-			inventory.mainInventory[heldItemIndex] = equipedArmor;
+			inventory.mainInventory.set(heldItemIndex, equipedArmor);
 
 		SurvivalTweaks.playSound(SoundEvents.ENTITY_IRONGOLEM_ATTACK, world, player);
 	}

@@ -111,7 +111,7 @@ public class ConfigHandler
 	public void alertPlayer(PlayerLoggedInEvent joinEvent)
 	{
 		if (invalidEntry.size() > 0)
-			joinEvent.player.addChatComponentMessage(new TextComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
+			joinEvent.player.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
 	}
 
 	public static boolean spawnLava()

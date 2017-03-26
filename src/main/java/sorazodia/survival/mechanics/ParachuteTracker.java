@@ -18,6 +18,7 @@ public class ParachuteTracker
 	
 	public static void addParachute(String item)
 	{
+		System.out.println(item);
 			ParachuteTracker.ITEMS.add(item);
 	}
 	

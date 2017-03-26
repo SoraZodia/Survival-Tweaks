@@ -48,8 +48,8 @@ public class BlockBreakEvent
 					for (ItemStack drop : harvestEvent.getDrops())
 					{
 						ItemStack item = drop.copy();
-						drop.stackSize = 0;
-						player.entityDropItem(item, item.stackSize);
+						drop.setCount(0);
+						player.entityDropItem(item, item.getCount());
 					}
 
 					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));
@@ -78,7 +78,7 @@ public class BlockBreakEvent
 							damage = 2.0F;
 							break;
 						}
-						player.attackEntityFrom(DamageSource.magic, damage);
+						player.attackEntityFrom(DamageSource.MAGIC, damage);
 					}
 					if (block == Blocks.SOUL_SAND)
 					{

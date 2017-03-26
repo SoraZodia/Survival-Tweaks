@@ -39,7 +39,7 @@ public class EnderEvent
 			if (((ConfigHandler.allowPearlCreative() && player.capabilities.isCreativeMode) || (ConfigHandler.doInstantRecharge() && player.dimension == 1)) && heldItem == Items.ENDER_PEARL)
 			{
 				event.setCanceled(true);
-				heldItem.onItemRightClick(heldStack, event.getWorld(),player, event.getHand());
+				heldItem.onItemRightClick(event.getWorld(),player, event.getHand());
 				player.getCooldownTracker().setCooldown(heldItem, 0);
 				event.setResult(Result.ALLOW);
 			}
@@ -53,7 +53,7 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode || !player.isSneaking() || world.isRemote)
 			return;
 
-		BlockPos nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition());
+		BlockPos nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition(), true);
 
 		if (nearestStrongHold != null)
 		{
@@ -61,7 +61,7 @@ public class EnderEvent
 			int y = nearestStrongHold.getY();
 			int z = nearestStrongHold.getZ();
 
-			nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition());
+			nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition(), true);
 
 			player.setPositionAndUpdate(x, y, z);
 		}

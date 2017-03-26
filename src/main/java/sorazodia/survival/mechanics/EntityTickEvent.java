@@ -39,7 +39,7 @@ public class EntityTickEvent
 		double r = 0.32;
 
 		AxisAlignedBB box = new AxisAlignedBB(entity.posX, entity.posY, entity.posZ, entity.posX + r, entity.posY + r, entity.posZ + r);
-		for (Object o : entity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, box))
+		for (Object o : entity.world.getEntitiesWithinAABB(EntityLivingBase.class, box))
 		{
 			EntityLivingBase living = (EntityLivingBase) o;
 			entity.applyEntityCollision(living);
@@ -88,7 +88,7 @@ public class EntityTickEvent
 	{
 		if (entity.dimension == -1 && entity.ticksExisted % 50 == 0 && !entity.isAirBorne)
 		{
-			World world = entity.worldObj;
+			World world = entity.world;
 			BlockPos entityPos = entity.getPosition();
 			BlockPos ground = new BlockPos(entityPos.getX(), entityPos.getY() - 1, entityPos.getZ());
 			Block block = world.getBlockState(ground).getBlock();

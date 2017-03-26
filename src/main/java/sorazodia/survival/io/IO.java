@@ -34,7 +34,7 @@ public class IO
 					return;
 				
 				reader = new BufferedReader(new FileReader(file));
-
+				
 				while ((str = reader.readLine()) != null)
 					ParachuteTracker.addParachute(str);
 			}
