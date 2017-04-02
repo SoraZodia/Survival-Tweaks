@@ -40,7 +40,7 @@ public class EnderEvent
 			{
 				event.setCanceled(true);
 				heldItem.onItemRightClick(event.getWorld(),player, event.getHand());
-				player.getCooldownTracker().setCooldown(heldItem, 0);
+				player.getCooldownTracker().removeCooldown(heldItem);
 				event.setResult(Result.ALLOW);
 			}
 
