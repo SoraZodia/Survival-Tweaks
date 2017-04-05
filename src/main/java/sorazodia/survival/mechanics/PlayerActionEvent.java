@@ -114,6 +114,7 @@ public class PlayerActionEvent
 		EnumFacing offset = event.getFace();
 		IBlockState blockState = world.getBlockState(event.getPos());
 		Block block = blockState.getBlock();
+		EnumHand hand = event.getHand();
 
 		if (heldStack != null && offset != null && event.getUseItem() != DENY)
 		{
@@ -121,14 +122,14 @@ public class PlayerActionEvent
 			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
 				return;
 
-			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, player.getActiveHand(), offset, 0, 0, 0);
+			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, hand, offset, 0, 0, 0);
 
 			if (event.getUseBlock() == DENY || !blockActivated)
 			{
-				player.swingArm(event.getHand());
+				player.swingArm(hand);
 
 				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
-					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, event.getHand());
+					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 
 			}
 		}
