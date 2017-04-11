@@ -29,7 +29,7 @@ import sorazodia.survival.server.command.DimensionChecker;
 public class SurvivalTweaks
 {
 	public static final String MODID = "survivaltweaks";
-	public static final String VERSION = "3.1.0";
+	public static final String VERSION = "3.1.1";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
 
