@@ -16,10 +16,11 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 import sorazodia.survival.config.ConfigHandler;
-import sorazodia.survival.io.IO;
+import sorazodia.survival.io.ParachuteReader;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
+import sorazodia.survival.mechanics.ParachuteTracker;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.mechanics.PlayerSleepEvent;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
@@ -29,7 +30,7 @@ import sorazodia.survival.server.command.DimensionChecker;
 public class SurvivalTweaks
 {
 	public static final String MODID = "survivaltweaks";
-	public static final String VERSION = "4.0.1";
+	public static final String VERSION = "4.1.0";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
 
@@ -37,7 +38,7 @@ public class SurvivalTweaks
 	private static Logger log;
 	private static float soundLevel = 0;
 	
-	private IO parser;
+	private ParachuteReader parachuteReader;
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
@@ -50,10 +51,11 @@ public class SurvivalTweaks
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
+		String path = preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks\\";
 		log = preEvent.getModLog();
 		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
-		parser = new IO(preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks");
+		parachuteReader = new ParachuteReader(path);
 
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
@@ -63,7 +65,7 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepEvent());
 		MinecraftForge.EVENT_BUS.register(configHandler);
 
-		parser.read();
+		parachuteReader.read();
 
 		log.info("Mod Loaded");
 	}
