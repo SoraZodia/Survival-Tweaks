@@ -16,13 +16,15 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 
 import sorazodia.survival.config.ConfigHandler;
-import sorazodia.survival.io.ParachuteReader;
+import sorazodia.survival.io.IO;
 import sorazodia.survival.mechanics.BlockBreakEvent;
 import sorazodia.survival.mechanics.EnderEvent;
 import sorazodia.survival.mechanics.EntityTickEvent;
-import sorazodia.survival.mechanics.ParachuteTracker;
 import sorazodia.survival.mechanics.PlayerActionEvent;
 import sorazodia.survival.mechanics.PlayerSleepEvent;
+import sorazodia.survival.mechanics.trackers.BlackListTracker;
+import sorazodia.survival.mechanics.trackers.ParachuteTracker;
+import sorazodia.survival.mechanics.trackers.WhiteListTracker;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
 import sorazodia.survival.server.command.DimensionChecker;
 
@@ -38,7 +40,7 @@ public class SurvivalTweaks
 	private static Logger log;
 	private static float soundLevel = 0;
 	
-	private ParachuteReader parachuteReader;
+	private static IO[] trackers = new IO[3];//0=parachute, 1=whitelist, 2=blacklist
 
 	@EventHandler
 	public void serverStart(FMLServerStartingEvent preServerEvent)
@@ -53,9 +55,12 @@ public class SurvivalTweaks
 	{
 		String path = preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks\\";
 		log = preEvent.getModLog();
+		
 		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
-		parachuteReader = new ParachuteReader(path);
+		trackers[0] = new ParachuteTracker(path);
+		trackers[1] = new WhiteListTracker(path);
+		trackers[2] = new BlackListTracker(path);
 
 		MinecraftForge.EVENT_BUS.register(new PlayerActionEvent());
 		MinecraftForge.EVENT_BUS.register(new EnderEvent());
@@ -65,9 +70,25 @@ public class SurvivalTweaks
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepEvent());
 		MinecraftForge.EVENT_BUS.register(configHandler);
 
-		parachuteReader.read();
+		for (IO paser: trackers)
+			paser.read();
 
 		log.info("Mod Loaded");
+	}
+	
+	public static IO getParachuteTracker()
+	{
+		return trackers[0];
+	}
+	
+	public static IO getWhiteListTracker()
+	{
+		return trackers[1];
+	}
+	
+	public static IO getBlackListTracker()
+	{
+		return trackers[2];
 	}
 
 	public static Logger getLogger()
