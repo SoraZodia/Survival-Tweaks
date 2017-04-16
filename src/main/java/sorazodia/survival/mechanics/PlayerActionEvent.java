@@ -34,9 +34,13 @@ import org.apache.logging.log4j.Level;
 
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
+import sorazodia.survival.mechanics.trackers.BlackListTracker;
+import sorazodia.survival.mechanics.trackers.WhiteListTracker;
 
 public class PlayerActionEvent
 {
+	private WhiteListTracker whitelist = (WhiteListTracker) SurvivalTweaks.getWhiteListTracker();
+	private BlackListTracker blacklist = (BlackListTracker) SurvivalTweaks.getBlackListTracker();
 
 	@SubscribeEvent
 	public void itemUseTick(LivingEntityUseItemEvent.Tick event)
@@ -49,7 +53,7 @@ public class PlayerActionEvent
 	public void playerTick(PlayerTickEvent event)
 	{
 		EntityPlayer player = event.player;
-		
+
 		if (player.getActiveHand() != null && player.getHeldItem(player.getActiveHand()) != null)
 		{
 			ItemStack stack = player.getHeldItem(player.getActiveHand());
@@ -58,7 +62,7 @@ public class PlayerActionEvent
 			{
 				if (player.motionY == -1000)
 					SurvivalTweaks.getLogger().printf(Level.INFO, "[%s] AHHHHHHHHHHHHHHHHH AHHHHHH AHHHHHHHHHHHHHHHHH I BELIEVE I CAN FLYYYYYYY", player.getDisplayName());
-				
+
 				player.swingProgress = 0.85F;
 				softenFall(player, stack);
 			}
@@ -128,8 +132,9 @@ public class PlayerActionEvent
 			{
 				player.swingArm(hand);
 
-				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable()))
-					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable() || whitelist.isValid(heldStack.getItem())))
+					if (!blacklist.isValid(heldStack.getItem()))
+						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 
 			}
 		}
@@ -161,7 +166,7 @@ public class PlayerActionEvent
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-			
+
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
@@ -186,8 +191,7 @@ public class PlayerActionEvent
 
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && heldBlock.getBlock().canPlaceBlockAt(world, pos))
 				{
-					
-					
+
 					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
 
 					if (!world.isRemote)
