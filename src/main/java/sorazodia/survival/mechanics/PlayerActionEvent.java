@@ -140,9 +140,8 @@ public class PlayerActionEvent
 						throwArrow(world, player, heldStack);
 				}
 
-				if (ConfigHandler.doToolBlockPlace() && (heldItem instanceof ItemTool || whitelist.isValid(heldItem) || heldItem.isDamageable())
-						&& interactEvent.action == Action.RIGHT_CLICK_BLOCK)
-					if (!blacklist.isValid(heldItem))
+				if (ConfigHandler.doToolBlockPlace() && interactEvent.action == Action.RIGHT_CLICK_BLOCK)
+					if (!blacklist.isValid(heldItem) || whitelist.isValid(heldItem))
 						placeBlocks(world, player, heldStack, x, y, z, face, offset);
 			}
 		}
@@ -163,8 +162,8 @@ public class PlayerActionEvent
 
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % 9);
 
-//		if (!(heldStack.getItem() instanceof ItemTool))
-//			return;
+		if (!(heldStack.getItem() instanceof ItemTool || whitelist.isValid(heldStack.getItem())))
+			return;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
 		{
