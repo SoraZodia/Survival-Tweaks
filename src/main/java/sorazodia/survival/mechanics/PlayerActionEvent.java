@@ -132,8 +132,8 @@ public class PlayerActionEvent
 			{
 				player.swingArm(hand);
 
-				if (ConfigHandler.doToolBlockPlace() && (heldStack.getItem() instanceof ItemTool || heldStack.getItem().isDamageable() || whitelist.isValid(heldStack.getItem())))
-					if (!blacklist.isValid(heldStack.getItem()))
+				if (ConfigHandler.doToolBlockPlace())
+					if (!blacklist.isValid(heldStack.getItem()) || whitelist.isValid(heldStack.getItem()))
 						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 
 			}
@@ -148,7 +148,7 @@ public class PlayerActionEvent
 		int hotbarLength = InventoryPlayer.getHotbarSize();
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % hotbarLength);
 
-		if (!(heldStack.getItem() instanceof ItemTool) || (activeHand == EnumHand.OFF_HAND && player.getHeldItemOffhand().getItem() instanceof ItemBlock))
+		if (!( whitelist.isValid(heldStack.getItem()) || heldStack.getItem() instanceof ItemTool || (activeHand == EnumHand.OFF_HAND && player.getHeldItemOffhand().getItem() instanceof ItemBlock)))
 			return;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
