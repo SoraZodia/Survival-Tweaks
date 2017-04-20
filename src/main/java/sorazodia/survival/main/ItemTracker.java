@@ -15,6 +15,6 @@ public class ItemTracker
 	
 	public boolean exists(Item item)
 	{
-		return ITEMS.indexOf(Item.getIdFromItem(item)) != -1 || ITEMS.indexOf(item.getUnlocalizedName()) != -1 || ITEMS.indexOf(Item.REGISTRY.getNameForObject(item).toString()) != -1;
+		return ITEMS.indexOf(Item.getIdFromItem(item)) != -1 || ITEMS.indexOf(item.getUnlocalizedName()) != -1 || ITEMS.indexOf(Item.itemRegistry.getNameForObject(item).toString()) != -1;
 	}
 }

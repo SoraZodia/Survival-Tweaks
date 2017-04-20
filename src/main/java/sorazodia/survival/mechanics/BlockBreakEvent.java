@@ -1,66 +1,57 @@
 package sorazodia.survival.mechanics;
 
+import sorazodia.survival.config.ConfigHandler;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import sorazodia.survival.config.ConfigHandler;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BlockBreakEvent
 {
-	private Block block = Blocks.AIR;
-	
-	//Get the block being broken since it will be air when HarvestDropsEvent fires
-	@SubscribeEvent
-	public void blockBreak(BreakEvent breakEvent)
-	{
-		if (breakEvent.getPlayer() != null)
-		{
-			block = breakEvent.getState().getBlock();
-		}
-	}
-
 	@SubscribeEvent
 	public void netherHarvest(HarvestDropsEvent harvestEvent)
 	{
-		if (harvestEvent.getHarvester() == null)
+		if (harvestEvent.harvester == null)
 			return;
 
-		EntityPlayer player = harvestEvent.getHarvester();
-		ItemStack heldItem = player.getActiveItemStack();
-		World world = harvestEvent.getWorld();
-		BlockPos blockLocation = harvestEvent.getPos();
+		EntityPlayer player = harvestEvent.harvester;
+		ItemStack heldItem = player.getCurrentEquippedItem();
+		Block block = harvestEvent.block;
+		World world = harvestEvent.world;
+		int x = harvestEvent.x;
+		int y = harvestEvent.y;
+		int z = harvestEvent.z;
 
 		if (!player.capabilities.isCreativeMode)
 		{
-			if (!harvestEvent.isSilkTouching())
+			if (!harvestEvent.isSilkTouching)
 			{
-				if (ConfigHandler.spawnLava() && (block == Blocks.NETHERRACK || block == Blocks.QUARTZ_ORE) && heldItem != null && heldItem.getItem().canHarvestBlock(block.getDefaultState()))//; <- This little bugger cause all blocks mined to spawn lava regardless of config settings 
+				if (ConfigHandler.spawnLava() && (block == Blocks.netherrack || block == Blocks.quartz_ore) && heldItem != null && heldItem.getItem().canHarvestBlock(
+						block, heldItem))
 				{
-					for (ItemStack drop : harvestEvent.getDrops())
+					for (ItemStack drop : harvestEvent.drops)
 					{
 						ItemStack item = drop.copy();
-						drop.setCount(0);
-						player.entityDropItem(item, item.getCount());
+						drop.stackSize = 0;
+						player.entityDropItem(item, item.stackSize);
 					}
 
-					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));
+					world.setBlock(x, y, z, Blocks.flowing_lava);
+					world.setBlockMetadataWithNotify(x, y, z, 8, 2);
 				}
 
 				if (ConfigHandler.doNetherBlockEffect())
 				{
-					if (block == Blocks.NETHER_WART)
+					if (block == Blocks.nether_wart)
 					{
 						float damage = 0;
-						switch (world.getDifficulty())
+						switch (world.difficultySetting)
 						{
 						case PEACEFUL:
 							damage = 1.0F;
@@ -78,12 +69,12 @@ public class BlockBreakEvent
 							damage = 2.0F;
 							break;
 						}
-						player.attackEntityFrom(DamageSource.MAGIC, damage);
+						player.attackEntityFrom(DamageSource.magic, damage);
 					}
-					if (block == Blocks.SOUL_SAND)
+					if (block == Blocks.soul_sand)
 					{
 						int duration = 0;
-						switch (world.getDifficulty())
+						switch (world.difficultySetting)
 						{
 						case PEACEFUL:
 							duration = 50;
@@ -101,7 +92,7 @@ public class BlockBreakEvent
 							duration = 130;
 							break;
 						}
-						player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration));
+						player.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, duration));
 					}
 				}
 			}
