@@ -11,6 +11,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.EnumAction;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemArrow;
 import net.minecraft.item.ItemBlock;
@@ -133,7 +134,6 @@ public class PlayerActionEvent
 				player.swingArm(hand);
 
 				if (ConfigHandler.doToolBlockPlace())
-					if (!blacklist.isValid(heldStack.getItem()) || whitelist.isValid(heldStack.getItem()))
 						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 
 			}
@@ -147,8 +147,12 @@ public class PlayerActionEvent
 		int heldItemIndex = inventory.currentItem;
 		int hotbarLength = InventoryPlayer.getHotbarSize();
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % hotbarLength);
-
-		if (!( whitelist.isValid(heldStack.getItem()) || heldStack.getItem() instanceof ItemTool || (activeHand == EnumHand.OFF_HAND && player.getHeldItemOffhand().getItem() instanceof ItemBlock)))
+		Item heldItem = heldStack.getItem();
+		
+		if ((blacklist.isValid(heldItem) && !whitelist.isValid(heldItem)) || !(heldItem instanceof ItemTool))
+			return;
+		
+		if (player.getHeldItemOffhand().getItem() instanceof ItemBlock)
 			return;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
@@ -162,7 +166,7 @@ public class PlayerActionEvent
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean canHarvest = heldStack.getItem().canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
+			boolean canHarvest = heldItem.canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
