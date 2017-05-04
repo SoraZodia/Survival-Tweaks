@@ -135,21 +135,20 @@ public class PlayerActionEvent
 
 				if (ConfigHandler.doToolBlockPlace())
 						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
-
 			}
 		}
 
 	}
 
 	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
-	{
+	{	
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		int hotbarLength = InventoryPlayer.getHotbarSize();
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % hotbarLength);
 		Item heldItem = heldStack.getItem();
 		
-		if ((blacklist.isValid(heldItem) && !whitelist.isValid(heldItem)) || !(heldItem instanceof ItemTool))
+		if (!whitelist.isValid(heldItem) && (blacklist.isValid(heldItem) || !(heldItem instanceof ItemTool)))
 			return;
 		
 		if (player.getHeldItemOffhand().getItem() instanceof ItemBlock)

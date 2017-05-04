@@ -6,15 +6,15 @@ import net.minecraft.item.Item;
 
 public class ItemTracker
 {
-	private final static ArrayList<String> ITEMS = new ArrayList<>();
+	private final ArrayList<String> items = new ArrayList<>();
 		
 	public void addItem(String item)
 	{
-		ItemTracker.ITEMS.add(item);
+		this.items.add(item);
 	}
 	
 	public boolean exists(Item item)
 	{
-		return ITEMS.indexOf(Item.getIdFromItem(item)) != -1 || ITEMS.indexOf(item.getUnlocalizedName()) != -1 || ITEMS.indexOf(Item.REGISTRY.getNameForObject(item).toString()) != -1;
+		return this.items.indexOf(Item.getIdFromItem(item)) != -1 || this.items.indexOf(item.getUnlocalizedName()) != -1 || this.items.indexOf(Item.REGISTRY.getNameForObject(item).toString()) != -1;
 	}
 }
