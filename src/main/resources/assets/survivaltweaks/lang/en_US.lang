@@ -18,3 +18,6 @@ survivaltweaks.command.tpd.p2id.xyz=/tpd <Player Name> <Dimension Id> <x> <y> <z
 survivaltweaks.command.tpd.p2p=/tpd <First Player Name> <Second Player Name> - Teleport the first player to the second player, regardless of their current dimension
 survivaltweaks.command.tpd.list.here=You Are Here
 survivaltweaks.command.tpd.sameplayer=No Teleception for you!... I'll take my leave now
+
+survivaltweaks.command.reload.success=Lists reloaded
+survivaltweaks.command.reload= <reload> Re-parse the whitelist, blacklist, and parachutes, applying any new changes that were made

@@ -26,6 +26,7 @@ import sorazodia.survival.mechanics.trackers.BlackListTracker;
 import sorazodia.survival.mechanics.trackers.ParachuteTracker;
 import sorazodia.survival.mechanics.trackers.WhiteListTracker;
 import sorazodia.survival.server.command.CommandDimensionTeleport;
+import sorazodia.survival.server.command.CommandReloadList;
 import sorazodia.survival.server.command.DimensionChecker;
 
 @Mod(name = NAME, version = VERSION, modid = MODID, guiFactory = GUI_FACTORY)
@@ -48,6 +49,8 @@ public class SurvivalTweaks
 		if (!(Loader.isModLoaded("Mystcraft") || Loader.isModLoaded("rftools")))
 			preServerEvent.registerServerCommand(new CommandDimensionTeleport());
 		DimensionChecker.clear();
+		
+		preServerEvent.registerServerCommand(new CommandReloadList());
 	}
 
 	@EventHandler

@@ -3,13 +3,14 @@ package sorazodia.survival.server.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import sorazodia.survival.main.SurvivalTweaks;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
+import sorazodia.survival.main.SurvivalTweaks;
 
 public class CommandReloadList implements ICommand
 {
@@ -31,8 +32,11 @@ public class CommandReloadList implements ICommand
 	@Override
 	public void execute(MinecraftServer server, ICommandSender player, String[] args) throws CommandException
 	{
-		// TODO Auto-generated method stub
+		SurvivalTweaks.getBlackListTracker().reset();
+		SurvivalTweaks.getWhiteListTracker().reset();
+		SurvivalTweaks.getParachuteTracker().reset();
 		
+		player.sendMessage(new TextComponentTranslation("survivaltweaks.command.reload.success"));
 	}
 
 	@Override

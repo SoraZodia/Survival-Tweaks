@@ -1,4 +1,4 @@
-package sorazodia.survival.main;
+package sorazodia.survival.io;
 
 import java.util.ArrayList;
 
@@ -16,5 +16,10 @@ public class ItemTracker
 	public boolean exists(Item item)
 	{
 		return this.items.indexOf(Item.getIdFromItem(item)) != -1 || this.items.indexOf(item.getUnlocalizedName()) != -1 || this.items.indexOf(Item.REGISTRY.getNameForObject(item).toString()) != -1;
+	}
+	
+	protected void clear()
+	{
+		items.clear();
 	}
 }
