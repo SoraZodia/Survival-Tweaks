@@ -153,8 +153,6 @@ public class PlayerActionEvent
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 
-		System.out.println(heldItemIndex);
-
 		if (heldItemIndex >= 9)
 		{
 			heldItemIndex = -1; // For Mine and Blade dual weapons
