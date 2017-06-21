@@ -1,7 +1,7 @@
 package sorazodia.survival.mechanics.trackers;
 
 import sorazodia.survival.io.IO;
-import sorazodia.survival.main.ItemTracker;
+import sorazodia.survival.io.ItemTracker;
 
 public class WhiteListTracker extends IO
 {

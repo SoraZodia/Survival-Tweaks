@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Level;
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import sorazodia.survival.mechanics.trackers.BlackListTracker;
-import sorazodia.survival.mechanics.trackers.ParachuteTracker;
 import sorazodia.survival.mechanics.trackers.WhiteListTracker;
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
