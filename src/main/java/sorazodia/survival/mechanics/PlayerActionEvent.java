@@ -2,6 +2,8 @@ package sorazodia.survival.mechanics;
 
 import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockTorch;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -131,6 +133,9 @@ public class PlayerActionEvent
 
 			if (event.getUseBlock() == DENY || !blockActivated)
 			{
+				if (player.getActiveHand() == null)
+					hand = EnumHand.MAIN_HAND;
+				
 				player.swingArm(hand);
 
 				if (ConfigHandler.doToolBlockPlace())
@@ -170,6 +175,8 @@ public class PlayerActionEvent
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
+			
+			
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
