@@ -1,6 +1,9 @@
 package sorazodia.survival.main;
 
 import static sorazodia.survival.main.SurvivalTweaks.*;
+
+import java.nio.file.Paths;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.SoundCategory;
@@ -56,9 +59,10 @@ public class SurvivalTweaks
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
-		String path = preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks\\";
+		String path = Paths.get(preEvent.getModConfigurationDirectory().getAbsolutePath().toString(), "survivalTweaks").toString();
 		log = preEvent.getModLog();
 		
+		log.info(path);
 		log.info("Syncing config and registering events");
 		configHandler = new ConfigHandler(preEvent);
 		trackers[0] = new ParachuteTracker(path);

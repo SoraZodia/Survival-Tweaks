@@ -2,8 +2,6 @@ package sorazodia.survival.mechanics;
 
 import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockTorch;
-import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;

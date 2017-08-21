@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import net.minecraft.item.Item;
 
@@ -14,7 +15,7 @@ public abstract class IO
 	
 	public IO(String path, String dirName, ItemTracker tracker)
 	{
-		this.path = path + dirName;
+		this.path = Paths.get(path, dirName).toString();
 		this.tracker = tracker;
 	}
 	
