@@ -4,17 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import net.minecraft.item.Item;
 
 public abstract class IO
 {
-	protected String path = "";
+	protected Path path;
 	protected ItemTracker tracker;
 	
 	public IO(String path, String dirName, ItemTracker tracker)
 	{
-		this.path = path + dirName;
+		this.path = Paths.get(path, dirName);
 		this.tracker = tracker;
 	}
 	
@@ -22,7 +24,7 @@ public abstract class IO
 	{
 		try
 		{
-			File dir = new File(this.path);
+			File dir = this.path.toFile();
 			BufferedReader reader;
 			String str;
 

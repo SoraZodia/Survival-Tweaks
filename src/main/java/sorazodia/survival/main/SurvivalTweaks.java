@@ -4,6 +4,9 @@ import static sorazodia.survival.main.SurvivalTweaks.GUI_FACTORY;
 import static sorazodia.survival.main.SurvivalTweaks.MODID;
 import static sorazodia.survival.main.SurvivalTweaks.NAME;
 import static sorazodia.survival.main.SurvivalTweaks.VERSION;
+
+import java.nio.file.Paths;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,7 +41,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 public class SurvivalTweaks
 {
 	public static final String MODID = "survivalTweaks";
-	public static final String VERSION = "1.4.0";
+	public static final String VERSION = "1.4.1";
 	public static final String NAME = "Survival Tweaks";
 	public static final String GUI_FACTORY = "sorazodia.survival.config.ConfigGUIFactory";
 
@@ -68,8 +71,9 @@ public class SurvivalTweaks
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent preEvent)
 	{
-		String path = preEvent.getModConfigurationDirectory().getAbsolutePath() + "\\survivalTweaks\\";
+		String path = Paths.get(preEvent.getModConfigurationDirectory().getAbsolutePath().toString(), "survivalTweaks").toString();
 		log = preEvent.getModLog();
+		log.info(path);
 		log.info("Initializating...");
 		log.info("Syncing config");
 		
