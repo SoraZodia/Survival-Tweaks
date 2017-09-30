@@ -57,7 +57,7 @@ public class CommandDimensionTeleport implements ICommand
 				break;
 
 			targetDimension = Integer.parseInt(args[0]);
-			worldServer = server.worldServerForDimension(targetDimension);
+			worldServer = server.getWorld(targetDimension);
 			player = CommandDimensionTeleport.getPlayer(sender);
 
 			tranferToDimension(server, player, worldServer, player.dimension, targetDimension);
@@ -74,7 +74,7 @@ public class CommandDimensionTeleport implements ICommand
 					break;
 
 				targetDimension = Integer.parseInt(args[1]);
-				worldServer = server.worldServerForDimension(targetDimension);
+				worldServer = server.getWorld(targetDimension);
 
 				tranferToDimension(server, player, worldServer, player.dimension, targetDimension);
 			} else
@@ -88,7 +88,7 @@ public class CommandDimensionTeleport implements ICommand
 				}
 
 				targetDimension = targetPlayer.dimension;
-				worldServer = server.worldServerForDimension(targetDimension);
+				worldServer = server.getWorld(targetDimension);
 
 				tranferToDimension(server, player, targetPlayer, worldServer, player.dimension, targetDimension, targetPlayer.posX, targetPlayer.posY + 1,
 						targetPlayer.posZ);
@@ -102,7 +102,7 @@ public class CommandDimensionTeleport implements ICommand
 				break;
 
 			targetDimension = Integer.parseInt(args[0]);
-			worldServer = server.worldServerForDimension(targetDimension);
+			worldServer = server.getWorld(targetDimension);
 
 			tranferToDimension(server, player, worldServer, player.dimension, targetDimension, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 			break;
@@ -128,7 +128,7 @@ public class CommandDimensionTeleport implements ICommand
 			else
 				targetDimension = Integer.parseInt(args[0]);
 
-			worldServer = server.worldServerForDimension(targetDimension);
+			worldServer = server.getWorld(targetDimension);
 
 			if (!solo)
 				tranferToDimension(server, player, worldServer, player.dimension, targetDimension, Integer.parseInt(args[2]), Integer.parseInt(args[3]));
@@ -144,7 +144,7 @@ public class CommandDimensionTeleport implements ICommand
 				break;
 
 			targetDimension = Integer.parseInt(args[1]);
-			worldServer = server.worldServerForDimension(targetDimension);
+			worldServer = server.getWorld(targetDimension);
 
 			tranferToDimension(server, player, null, worldServer, player.dimension, targetDimension, Double.parseDouble(args[2]), Double.valueOf(args[3]),
 					Double.parseDouble(args[4]));

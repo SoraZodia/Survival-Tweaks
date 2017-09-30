@@ -53,7 +53,7 @@ public class EnderEvent
 		if (!player.capabilities.isCreativeMode || !player.isSneaking() || world.isRemote)
 			return;
 
-		BlockPos nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition(), true);
+		BlockPos nearestStrongHold = ((WorldServer) world).getChunkProvider().getNearestStructurePos(world, "Stronghold", player.getPosition(), true);
 
 		if (nearestStrongHold != null)
 		{
@@ -61,7 +61,7 @@ public class EnderEvent
 			int y = nearestStrongHold.getY();
 			int z = nearestStrongHold.getZ();
 
-			nearestStrongHold = ((WorldServer) world).getChunkProvider().getStrongholdGen(world, "Stronghold", player.getPosition(), true);
+			nearestStrongHold = ((WorldServer) world).getChunkProvider().getNearestStructurePos(world, "Stronghold", player.getPosition(), true);
 
 			player.setPositionAndUpdate(x, y, z);
 		}
