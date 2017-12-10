@@ -23,12 +23,12 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -113,31 +113,37 @@ public class PlayerActionEvent
 
 	@SubscribeEvent
 	public void blockRightClick(RightClickBlock event)
-	{
-		EntityPlayer player = event.getEntityPlayer();
-		ItemStack heldStack = event.getItemStack();
-		World world = event.getWorld();
-		EnumFacing offset = event.getFace();
-		IBlockState blockState = world.getBlockState(event.getPos());
-		EnumHand hand = event.getHand();
-
-		if (heldStack != null && offset != null && event.getUseItem() != DENY)
+	{	
+		if (ConfigHandler.doToolBlockPlace() && event.getItemStack() != null && event.getFace() != null && event.getUseItem() != DENY)
 		{
-			if (event.getUseBlock() == DENY || player.isSneaking())
+			EntityPlayer player = event.getEntityPlayer();
+			ItemStack heldStack = event.getItemStack();
+			World world = event.getWorld();
+			EnumFacing offset = event.getFace();
+			IBlockState blockState = world.getBlockState(event.getPos());
+			Block block = blockState.getBlock();
+			EnumHand hand = event.getHand();
+			Vec3d hitVector = event.getHitVec();
+			
+			boolean blockActivated = true;
+			
+			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
+				return;
+		
+			blockActivated = !player.isSneaking() && block.onBlockActivated(world, event.getPos(), blockState, player, hand, offset, (float)hitVector.x, (float) hitVector.y, (float) hitVector.z);
+			
+			if (event.getUseBlock() == DENY || !blockActivated)
 			{	
 				player.swingArm(hand);
-
-				if (ConfigHandler.doToolBlockPlace())
-				{
-						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
-						event.setUseBlock(DENY);
-				}
+				placeBlocks(event, world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 			}
+			
+			event.setUseBlock(DENY);
 		}
 
 	}
 
-	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
+	public void placeBlocks(RightClickBlock event, World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
 	{	
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
@@ -195,7 +201,8 @@ public class PlayerActionEvent
 				{
 
 					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
-
+					
+					
 					if (!world.isRemote)
 					{
 						world.setBlockState(pos, heldBlock);
