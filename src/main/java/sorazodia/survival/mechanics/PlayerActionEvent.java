@@ -28,6 +28,7 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -118,26 +119,19 @@ public class PlayerActionEvent
 		World world = event.getWorld();
 		EnumFacing offset = event.getFace();
 		IBlockState blockState = world.getBlockState(event.getPos());
-		Block block = blockState.getBlock();
 		EnumHand hand = event.getHand();
 
 		if (heldStack != null && offset != null && event.getUseItem() != DENY)
 		{
-
-			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
-				return;
-
-			boolean blockActivated = !player.isSneaking() && block.onBlockActivated(world, new BlockPos(0, -1, 0), blockState, player, hand, offset, 0, 0, 0);
-
-			if (event.getUseBlock() == DENY || !blockActivated)
-			{
-				if (player.getActiveHand() == null)
-					hand = EnumHand.MAIN_HAND;
-				
+			if (event.getUseBlock() == DENY || player.isSneaking())
+			{	
 				player.swingArm(hand);
 
 				if (ConfigHandler.doToolBlockPlace())
+				{
 						placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+						event.setUseBlock(DENY);
+				}
 			}
 		}
 

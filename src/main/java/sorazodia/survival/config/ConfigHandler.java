@@ -84,7 +84,7 @@ public class ConfigHandler
 				potionIDs.add(list[x]);
 			else
 			{
-				FMLLog.info("%s is not a valid entry", list[x]);
+				FMLLog.log.debug("%s is not a valid entry", list[x]);
 				invalidEntry.add(list[x]);
 			}
 		}
