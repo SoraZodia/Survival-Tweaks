@@ -113,56 +113,60 @@ public class PlayerActionEvent
 
 	@SubscribeEvent
 	public void blockRightClick(RightClickBlock event)
-	{	
-		if (ConfigHandler.doToolBlockPlace() && event.getItemStack() != null && event.getFace() != null && event.getUseItem() != DENY)
-		{
-			EntityPlayer player = event.getEntityPlayer();
-			ItemStack heldStack = event.getItemStack();
-			World world = event.getWorld();
-			EnumFacing offset = event.getFace();
-			IBlockState blockState = world.getBlockState(event.getPos());
-			Block block = blockState.getBlock();
-			EnumHand hand = event.getHand();
-			Vec3d hitVector = event.getHitVec();
-			
-			boolean blockActivated = true;
-			
-			if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
-				return;
+	{
+		Item heldItem = event.getItemStack().getItem();
+		World world = event.getWorld();
 		
-			blockActivated = !player.isSneaking() && block.onBlockActivated(world, event.getPos(), blockState, player, hand, offset, (float)hitVector.x, (float) hitVector.y, (float) hitVector.z);
+		if (whitelist.isValid(heldItem) || (!blacklist.isValid(heldItem) && (heldItem instanceof ItemTool)))
+		{
+			if (!world.isRemote && ConfigHandler.doToolBlockPlace() && !event.getItemStack().isEmpty() && event.getFace() != null && event.getUseItem() != DENY)
+			{
+				EntityPlayer player = event.getEntityPlayer();
+				ItemStack heldStack = event.getItemStack();
+				EnumFacing offset = event.getFace();
+				IBlockState blockState = world.getBlockState(event.getPos());
+				EnumHand hand = event.getHand();
+				Vec3d hitVector = event.getHitVec();
+				
+				if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
+					return;
 			
-			if (event.getUseBlock() == DENY || !blockActivated)
-			{	
-				player.swingArm(hand);
-				placeBlocks(event, world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+				boolean blockActivated = !player.isSneaking() && blockState.getBlock().onBlockActivated(world, event.getPos(), blockState, player, hand, offset, (float)hitVector.x, (float)hitVector.y, (float)hitVector.z);
+					
+				if (event.getUseBlock() == DENY || !blockActivated)
+					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+				
+				// onBlockActivate will only be called if player is not sneaking, so the event only need to be cancelled then
+				// And event will be cancelled if and only if the block was activated, so that we can be sure that other actions would not
+				// had been possible at this point
+				if (!player.isSneaking() && blockActivated) 
+					event.setCanceled(true);
 			}
-			
-			event.setUseBlock(DENY);
 		}
 
 	}
 
-	public void placeBlocks(RightClickBlock event, World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
-	{	
+	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
+	{
 		InventoryPlayer inventory = player.inventory;
 		int heldItemIndex = inventory.currentItem;
 		int hotbarLength = InventoryPlayer.getHotbarSize();
 		ItemStack toPlace = inventory.getStackInSlot((heldItemIndex + 1) % hotbarLength);
 		Item heldItem = heldStack.getItem();
-		
-		if (!whitelist.isValid(heldItem) && (blacklist.isValid(heldItem) || !(heldItem instanceof ItemTool)))
-			return;
-		
+
 		if (player.getHeldItemOffhand().getItem() instanceof ItemBlock)
 			return;
 
 		if (toPlace == null || !(toPlace.getItem() instanceof ItemBlock))
 		{
 			if (heldItemIndex - 1 >= 0)
+			{
 				toPlace = player.inventory.getStackInSlot(heldItemIndex - 1 % hotbarLength);
+			}
 			else
+			{
 				toPlace = player.inventory.getStackInSlot(hotbarLength - 1); //Stops a ArrayOutOfBoundsException... % don't like negative
+			}	
 		}
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
@@ -173,8 +177,6 @@ public class PlayerActionEvent
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
 
-			
-			
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
@@ -201,8 +203,7 @@ public class PlayerActionEvent
 				{
 
 					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
-					
-					
+
 					if (!world.isRemote)
 					{
 						world.setBlockState(pos, heldBlock);
