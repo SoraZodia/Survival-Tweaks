@@ -43,7 +43,7 @@ public class PlayerActionEvent
 {
 	private WhiteListTracker whitelist = (WhiteListTracker) SurvivalTweaks.getWhiteListTracker();
 	private BlackListTracker blacklist = (BlackListTracker) SurvivalTweaks.getBlackListTracker();
-
+	
 	@SubscribeEvent
 	public void itemUseTick(LivingEntityUseItemEvent.Tick event)
 	{
@@ -102,13 +102,14 @@ public class PlayerActionEvent
 		if (heldStack == null)
 			return;
 
-		player.swingArm(event.getHand());
+		if (ConfigHandler.swingHand())
+			player.swingArm(event.getHand());
 
 		if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 			switchArmor(player, world, heldStack);
 
 		if (ConfigHandler.doArrowThrow() && heldStack.getItem() instanceof ItemArrow)
-			throwArrow(world, player, heldStack);
+			throwArrow(world, player, heldStack, event.getHand());
 	}
 
 	@SubscribeEvent
@@ -224,11 +225,12 @@ public class PlayerActionEvent
 		return false;
 	}
 
-	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem)
+	private void throwArrow(World world, EntityPlayer player, ItemStack heldItem, EnumHand hand)
 	{
 		float damage = (float) calculateDamage(4.0, player);
 
 		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
+		player.swingArm(hand);
 
 		if (!world.isRemote)
 		{
