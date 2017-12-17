@@ -102,9 +102,6 @@ public class PlayerActionEvent
 		if (heldStack == null)
 			return;
 
-		if (ConfigHandler.swingHand())
-			player.swingArm(event.getHand());
-
 		if (ConfigHandler.doArmorSwap() && heldStack.getItem() instanceof ItemArmor)
 			switchArmor(player, world, heldStack);
 
