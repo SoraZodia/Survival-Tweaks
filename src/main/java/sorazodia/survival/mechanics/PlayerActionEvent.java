@@ -21,6 +21,8 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -174,14 +176,16 @@ public class PlayerActionEvent
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-
+			
+			SoundEvent sound = heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getPlaceSound();
+			
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
 					return;
-
-				SurvivalTweaks.playSound(targetBlock.getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
-
+						
+				SurvivalTweaks.playSound(sound, SoundCategory.BLOCKS, world, player, true);
+				
 				if (!world.isRemote)
 				{
 					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState), heldStack);
@@ -199,8 +203,7 @@ public class PlayerActionEvent
 
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && heldBlock.getBlock().canPlaceBlockAt(world, pos))
 				{
-
-					SurvivalTweaks.playSound(heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getBreakSound(), world, player);
+					SurvivalTweaks.playSound(sound, SoundCategory.BLOCKS, world, player, true);
 
 					if (!world.isRemote)
 					{
@@ -226,7 +229,7 @@ public class PlayerActionEvent
 	{
 		float damage = (float) calculateDamage(4.0, player);
 
-		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, world, player);
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, world, player, false);
 		player.swingArm(hand);
 
 		if (!world.isRemote)
@@ -266,7 +269,7 @@ public class PlayerActionEvent
 		if (!player.capabilities.isCreativeMode)
 			inventory.mainInventory.set(heldItemIndex, equipedArmor);
 
-		SurvivalTweaks.playSound(SoundEvents.ENTITY_IRONGOLEM_ATTACK, world, player);
+		SurvivalTweaks.playSound(SoundEvents.ENTITY_IRONGOLEM_ATTACK, SoundCategory.PLAYERS, world, player, false);
 	}
 
 	private double calculateDamage(double damage, EntityLivingBase entity)

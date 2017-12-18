@@ -4,10 +4,10 @@ import static sorazodia.survival.main.SurvivalTweaks.*;
 
 import java.nio.file.Paths;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -42,7 +42,6 @@ public class SurvivalTweaks
 
 	private static ConfigHandler configHandler;
 	private static Logger log;
-	private static float soundLevel = 0;
 	
 	private static IO[] trackers = new IO[3];//0=parachute, 1=whitelist, 2=blacklist
 
@@ -138,12 +137,14 @@ public class SurvivalTweaks
 		return true;
 	}
 
-	public static void playSound(SoundEvent name, World world, EntityPlayer player)
+	public static void playSound(SoundEvent sound, SoundCategory category, World world, EntityPlayer player, boolean sendToAll)
 	{
-		if (world.isRemote)
-			soundLevel = Minecraft.getMinecraft().gameSettings.getSoundLevel(SoundCategory.PLAYERS);
-
-		world.playSound(null, player.getPosition(), name, SoundCategory.PLAYERS, soundLevel, soundLevel);
+		BlockPos pos = player.getPosition();
+		
+		if (sendToAll)
+			player = null;
+		
+		world.playSound(player, pos, sound, category, 1, 1);
 	}
 
 }
