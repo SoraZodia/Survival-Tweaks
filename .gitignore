@@ -14,6 +14,15 @@ $RECYCLE.BIN/
 bin/*
 build/*
 eclipse/*
+.classpath
+.project
+SurvivalTweaks_Client.launch
+SurvivalTweaks_Server.launch
+compile.bat
+config/*
+eula.txt
+logs/*
+setup.bat
 
 # Windows Installer files
 *.cab
