@@ -49,7 +49,7 @@ public class PlayerActionEvent
 	private WhiteListTracker whitelist = (WhiteListTracker) SurvivalTweaks.getWhiteListTracker();
 	private BlackListTracker blacklist = (BlackListTracker) SurvivalTweaks.getBlackListTracker();
 
-	public static HashMap<String, Boolean> activationMap = new HashMap<>();
+	private static HashMap<String, Boolean> activationMap = new HashMap<>();
 	
 	@SubscribeEvent
 	public void itemUseTick(LivingEntityUseItemEvent.Tick event)
@@ -155,12 +155,6 @@ public class PlayerActionEvent
 			}
 		}
 
-	}
-
-	public static void clearBlockActivationMap()
-	{
-		if (!activationMap.isEmpty())
-			activationMap.clear();
 	}
 
 	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
