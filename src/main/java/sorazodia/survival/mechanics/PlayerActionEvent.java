@@ -131,7 +131,10 @@ public class PlayerActionEvent
 				EnumFacing offset = event.getFace();
 				IBlockState blockState = world.getBlockState(event.getPos());
 				EnumHand hand = event.getHand();
-
+				
+				if(!player.isSneaking() && blockState.getBlock().hasTileEntity(blockState))
+					return;
+				
 				if (!player.isSneaking() && !activationMap.containsKey(blockState.getBlock().getUnlocalizedName()))
 				{
 					Class<? extends Block> blockClass = blockState.getBlock().getClass();
