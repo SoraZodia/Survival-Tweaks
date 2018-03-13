@@ -19,9 +19,9 @@ public class EntityTickEvent
 	private float stepAssistBoost = 0;
 
 	@SubscribeEvent
-	public void playerUpdate(LivingUpdateEvent updateEvent)
+	public void entityUpdate(LivingUpdateEvent event)
 	{
-		EntityLivingBase entity = updateEvent.getEntityLiving();
+		EntityLivingBase entity = event.getEntityLiving();
 
 		if (ConfigHandler.applyStepAssist())
 			stepAssist(entity);

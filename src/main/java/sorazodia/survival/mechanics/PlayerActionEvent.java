@@ -1,6 +1,10 @@
 package sorazodia.survival.mechanics;
 
 import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -25,7 +29,6 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
@@ -45,6 +48,8 @@ public class PlayerActionEvent
 {
 	private WhiteListTracker whitelist = (WhiteListTracker) SurvivalTweaks.getWhiteListTracker();
 	private BlackListTracker blacklist = (BlackListTracker) SurvivalTweaks.getBlackListTracker();
+
+	public static HashMap<String, Boolean> activationMap = new HashMap<>();
 	
 	@SubscribeEvent
 	public void itemUseTick(LivingEntityUseItemEvent.Tick event)
@@ -116,7 +121,7 @@ public class PlayerActionEvent
 	{
 		Item heldItem = event.getItemStack().getItem();
 		World world = event.getWorld();
-		
+
 		if (whitelist.isValid(heldItem) || (!blacklist.isValid(heldItem) && (heldItem instanceof ItemTool)))
 		{
 			if (!world.isRemote && ConfigHandler.doToolBlockPlace() && !event.getItemStack().isEmpty() && event.getFace() != null && event.getUseItem() != DENY)
@@ -126,24 +131,36 @@ public class PlayerActionEvent
 				EnumFacing offset = event.getFace();
 				IBlockState blockState = world.getBlockState(event.getPos());
 				EnumHand hand = event.getHand();
-				Vec3d hitVector = event.getHitVec();
-				
-				if (blockState.getBlock().hasTileEntity(blockState) && !player.isSneaking())
-					return;
-			
-				boolean blockActivated = !player.isSneaking() && blockState.getBlock().onBlockActivated(world, event.getPos(), blockState, player, hand, offset, (float)hitVector.x, (float)hitVector.y, (float)hitVector.z);
+
+				if (!player.isSneaking() && !activationMap.containsKey(blockState.getBlock().getUnlocalizedName()))
+				{
+					Class<? extends Block> blockClass = blockState.getBlock().getClass();
+					Method methods[] = blockClass.getDeclaredMethods();
 					
-				if (event.getUseBlock() == DENY || !blockActivated)
-					placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+					activationMap.put(blockState.getBlock().getUnlocalizedName(), true);
+					
+					for (int x = 0; x < methods.length; x++)
+					{
+						if (methods[x].getName().contains("onBlockActivated") || methods[x].getName().equals("a"))
+						{
+							activationMap.replace(blockState.getBlock().getUnlocalizedName(), false);
+							break;
+						}
+					}
+				}
 				
-				// onBlockActivate will only be called if player is not sneaking, so the event only need to be cancelled then
-				// And event will be cancelled if and only if the block was activated, so that we can be sure that other actions would not
-				// had been possible at this point
-				if (!player.isSneaking() && blockActivated) 
-					event.setCanceled(true);
+				if(player.isSneaking() || activationMap.get(blockState.getBlock().getUnlocalizedName()).booleanValue() == true)
+					this.placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
+				
 			}
 		}
 
+	}
+
+	public static void clearBlockActivationMap()
+	{
+		if (!activationMap.isEmpty())
+			activationMap.clear();
 	}
 
 	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
@@ -166,7 +183,7 @@ public class PlayerActionEvent
 			else
 			{
 				toPlace = player.inventory.getStackInSlot(hotbarLength - 1); //Stops a ArrayOutOfBoundsException... % don't like negative
-			}	
+			}
 		}
 
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
@@ -176,16 +193,16 @@ public class PlayerActionEvent
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-			
+
 			SoundEvent sound = heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getPlaceSound();
-			
+
 			if (player.isSneaking() && canHarvest)
 			{
 				if (targetBlock == Blocks.BEDROCK)
 					return;
-						
+
 				SurvivalTweaks.playSound(sound, SoundCategory.BLOCKS, world, player, true);
-				
+
 				if (!world.isRemote)
 				{
 					targetBlock.harvestBlock(world, player, pos, blockState, blockState.getBlock().createTileEntity(world, blockState), heldStack);
