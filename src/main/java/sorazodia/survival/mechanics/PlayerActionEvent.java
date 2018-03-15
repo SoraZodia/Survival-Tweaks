@@ -144,7 +144,7 @@ public class PlayerActionEvent
 					
 					for (int x = 0; x < methods.length; x++)
 					{
-						if (methods[x].getName().contains("onBlockActivated") || methods[x].getName().equals("a"))
+						if (methods[x].getName().equals("onBlockActivated") || methods[x].getName().equals("func_180639_a"))
 						{
 							activationMap.replace(blockState.getBlock().getUnlocalizedName(), false);
 							break;
