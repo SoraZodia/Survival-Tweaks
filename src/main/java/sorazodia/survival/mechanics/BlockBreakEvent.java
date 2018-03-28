@@ -1,8 +1,10 @@
 package sorazodia.survival.mechanics;
 
 import net.minecraft.block.Block;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Enchantments;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
@@ -17,14 +19,76 @@ import sorazodia.survival.config.ConfigHandler;
 public class BlockBreakEvent
 {
 	private Block block = Blocks.AIR;
-	
-	//Get the block being broken since it will be air when HarvestDropsEvent fires
+
 	@SubscribeEvent
 	public void blockBreak(BreakEvent breakEvent)
 	{
-		if (breakEvent.getPlayer() != null)
+		EntityPlayer player = breakEvent.getPlayer();
+
+		if (player instanceof EntityPlayer)
 		{
+			//Get the block being broken since it will be air when HarvestDropsEvent fires
 			block = breakEvent.getState().getBlock();
+		}
+		else
+		{
+			return;
+		}
+
+		World world = breakEvent.getWorld();
+		boolean hasSilkTouch = player.getHeldItem(player.getActiveHand()) != null && (EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, player.getHeldItem(player.getActiveHand())) > 0);
+		
+		if (!hasSilkTouch)
+		{
+			if (ConfigHandler.doNetherBlockEffect())
+			{
+				if (block == Blocks.NETHER_WART)
+				{
+					float damage = 0;
+					switch (world.getDifficulty())
+					{
+					case PEACEFUL:
+						damage = 1.0F;
+						break;
+					case EASY:
+						damage = 1.0F;
+						break;
+					case NORMAL:
+						damage = 2.0F;
+						break;
+					case HARD:
+						damage = 4.0F;
+						break;
+					default:
+						damage = 2.0F;
+						break;
+					}
+					player.attackEntityFrom(DamageSource.MAGIC, damage);
+				}
+				if (block == Blocks.SOUL_SAND)
+				{
+					int duration = 0;
+					switch (world.getDifficulty())
+					{
+					case PEACEFUL:
+						duration = 50;
+						break;
+					case EASY:
+						duration = 50;
+						break;
+					case NORMAL:
+						duration = 130;
+						break;
+					case HARD:
+						duration = 260;
+						break;
+					default:
+						duration = 130;
+						break;
+					}
+					player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration));
+				}
+			}
 		}
 	}
 
@@ -55,55 +119,6 @@ public class BlockBreakEvent
 					world.setBlockState(blockLocation, Blocks.FLOWING_LAVA.getStateFromMeta(8));
 				}
 
-				if (ConfigHandler.doNetherBlockEffect())
-				{
-					if (block == Blocks.NETHER_WART)
-					{
-						float damage = 0;
-						switch (world.getDifficulty())
-						{
-						case PEACEFUL:
-							damage = 1.0F;
-							break;
-						case EASY:
-							damage = 1.0F;
-							break;
-						case NORMAL:
-							damage = 2.0F;
-							break;
-						case HARD:
-							damage = 4.0F;
-							break;
-						default:
-							damage = 2.0F;
-							break;
-						}
-						player.attackEntityFrom(DamageSource.MAGIC, damage);
-					}
-					if (block == Blocks.SOUL_SAND)
-					{
-						int duration = 0;
-						switch (world.getDifficulty())
-						{
-						case PEACEFUL:
-							duration = 50;
-							break;
-						case EASY:
-							duration = 50;
-							break;
-						case NORMAL:
-							duration = 130;
-							break;
-						case HARD:
-							duration = 260;
-							break;
-						default:
-							duration = 130;
-							break;
-						}
-						player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration));
-					}
-				}
 			}
 		}
 	}
