@@ -23,6 +23,7 @@ config/*
 eula.txt
 logs/*
 setup.bat
+log.txt
 
 # Windows Installer files
 *.cab

@@ -186,7 +186,10 @@ public class PlayerActionEvent
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean canHarvest = heldItem.canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) || canItemHarvest(heldStack, targetBlock, blockState) || (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
+			boolean canHarvest = (heldStack.getTagCompound().hasKey("replaceAll") && heldStack.getTagCompound().getBoolean("replaceAll"))
+					|| heldItem.canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) 
+					|| canItemHarvest(heldStack, targetBlock, blockState) 
+					|| (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 
 			@SuppressWarnings("deprecation")
 			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());

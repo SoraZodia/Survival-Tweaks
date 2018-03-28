@@ -1,0 +1,15 @@
+{
+  "result": {
+    "item": "minecraft:chainmail_boots"
+  },
+  "type": "forge:ore_shaped",
+  "pattern": [
+	"m m"
+  ],
+  "key": {
+    "m": {
+		"type": "forge:ore_dict",
+        "ore": "ingotIron"
+    }
+  }
+}

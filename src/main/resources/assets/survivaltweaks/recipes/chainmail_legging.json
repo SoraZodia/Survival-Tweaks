@@ -1,0 +1,17 @@
+{
+  "result": {
+    "item": "minecraft:chainmail_leggings"
+  },
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "m m",
+	"   ",
+	"m m"
+  ],
+  "key": {
+    "m": {
+		"type": "forge:ore_dict",
+        "ore": "ingotIron"
+    }
+  }
+}
