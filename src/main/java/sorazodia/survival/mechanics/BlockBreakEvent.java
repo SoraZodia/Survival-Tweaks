@@ -24,6 +24,7 @@ public class BlockBreakEvent
 	public void blockBreak(BreakEvent breakEvent)
 	{
 		EntityPlayer player = breakEvent.getPlayer();
+		float values[] = ConfigHandler.blockEffectValue;
 
 		if (player instanceof EntityPlayer)
 		{
@@ -44,49 +45,37 @@ public class BlockBreakEvent
 			{
 				if (block == Blocks.NETHER_WART)
 				{
-					float damage = 0;
+					float damage = values[2];
 					switch (world.getDifficulty())
 					{
-					case PEACEFUL:
-						damage = 1.0F;
-						break;
-					case EASY:
-						damage = 1.0F;
-						break;
 					case NORMAL:
-						damage = 2.0F;
+						damage *= values[3];
 						break;
 					case HARD:
-						damage = 4.0F;
+						damage *= Math.pow(values[3], 2);
 						break;
 					default:
-						damage = 2.0F;
 						break;
 					}
 					player.attackEntityFrom(DamageSource.MAGIC, damage);
 				}
 				if (block == Blocks.SOUL_SAND)
 				{
-					int duration = 0;
+					float duration = values[0];
 					switch (world.getDifficulty())
 					{
-					case PEACEFUL:
-						duration = 50;
-						break;
-					case EASY:
-						duration = 50;
-						break;
 					case NORMAL:
-						duration = 130;
+						duration *= values[1];
+						System.out.print(duration);
 						break;
 					case HARD:
-						duration = 260;
+						duration *= Math.pow(values[1], 2);
+						System.out.print(duration);
 						break;
 					default:
-						duration = 130;
 						break;
 					}
-					player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration));
+					player.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, (int) duration));
 				}
 			}
 		}

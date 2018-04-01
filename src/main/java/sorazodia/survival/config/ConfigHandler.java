@@ -41,6 +41,15 @@ public class ConfigHandler
 	private static boolean netherBlockEffect = true;
 	private static boolean burn = false;
 	
+	//others
+	//Holds the base and multiplier for block effects.
+	/**
+	 * [base, multiplier]
+	 * Soulsand: 0, 1
+	 * Nether Wart : 2, 3
+	 */
+	public static float blockEffectValue[] = {50, 2.3F, 1, 2};
+	
 	public ConfigHandler(FMLPreInitializationEvent event)
 	{
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
@@ -70,6 +79,11 @@ public class ConfigHandler
 		burn = configFile.getBoolean("Burn Entities", Configuration.CATEGORY_GENERAL, false, "Burn entities when they step on Netherrack or Quartz Ore");
 		netherBlockEffect = configFile.getBoolean("Nether Block Effect", Configuration.CATEGORY_GENERAL, true, "Breaking certain blocks from the Nether cause the player to get negative potion effect");
 		
+		blockEffectValue[0] = configFile.getInt("Soulsand Duration Base", Configuration.CATEGORY_GENERAL, 50, 0, Integer.MAX_VALUE, "Starting value for the duration of effect caused by breaking Soulsand");
+		blockEffectValue[1] = configFile.getFloat("Soulsand Duration Multiplier", Configuration.CATEGORY_GENERAL, 2.3F, 0, Float.MAX_VALUE, "Starting at normal difficulty, how much to multiply the base value by");
+		
+		blockEffectValue[2] = configFile.getFloat("Nether Wart Damage Base", Configuration.CATEGORY_GENERAL, 1, 0, Float.MAX_VALUE, "Starting value for the damage caused by breaking Nether Warts");
+		blockEffectValue[3] = configFile.getFloat("Nether Wart Damage Multiplier", Configuration.CATEGORY_GENERAL, 2, 0, Float.MAX_VALUE, "Starting at normal difficulty, how much to multiply the base value by");
 		
 		if (configFile.hasChanged())
 			configFile.save();
