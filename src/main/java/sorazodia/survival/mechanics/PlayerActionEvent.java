@@ -122,7 +122,7 @@ public class PlayerActionEvent
 		Item heldItem = event.getItemStack().getItem();
 		World world = event.getWorld();
 
-		if (whitelist.isValid(heldItem) || (!blacklist.isValid(heldItem) && (heldItem instanceof ItemTool)))
+		if (whitelist.isValid(heldItem) || (!blacklist.isValid(heldItem)) && (heldItem instanceof ItemTool))
 		{
 			if (!world.isRemote && ConfigHandler.doToolBlockPlace() && !event.getItemStack().isEmpty() && event.getFace() != null && event.getUseItem() != DENY)
 			{
@@ -186,7 +186,7 @@ public class PlayerActionEvent
 		if (toPlace != null && toPlace.getItem() instanceof ItemBlock)
 		{
 			boolean isPlayerCreative = player.capabilities.isCreativeMode;
-			boolean canHarvest = (heldStack.getTagCompound().hasKey("replaceAll") && heldStack.getTagCompound().getBoolean("replaceAll"))
+			boolean canHarvest = (heldStack.getTagCompound()!= null && heldStack.getTagCompound().hasKey("replaceAll") && heldStack.getTagCompound().getBoolean("replaceAll"))
 					|| heldItem.canHarvestBlock(targetBlock.getBlockState().getBaseState(), heldStack) 
 					|| canItemHarvest(heldStack, targetBlock, blockState) 
 					|| (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
