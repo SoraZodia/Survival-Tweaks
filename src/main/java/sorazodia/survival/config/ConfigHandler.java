@@ -59,6 +59,7 @@ public class ConfigHandler
 	public static void syncConfig()
 	{
 		addToIDList(configFile.getStringList("Effects Cleared by Bed", Configuration.CATEGORY_GENERAL, potionList, "Effects with these IDs will be cleared when the player sleeps"));
+		ConfigBurnList.syncDimBurnConfig(configFile);
 		
 		pearlEndDamage = configFile.getBoolean("No Ender Pearl damage in End", Configuration.CATEGORY_GENERAL, true, "Ender Pearls used in the End will cause no fall damage");
 		enderTeleport = configFile.getBoolean("Stronghold Teleport", Configuration.CATEGORY_GENERAL, true, "Teleports a Creative mode player to a Stronghold when they uses the Eye of Ender while sneaking");
@@ -126,6 +127,8 @@ public class ConfigHandler
 	{
 		if (invalidEntry.size() > 0)
 			joinEvent.player.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.potion", invalidEntry.toString()));
+		if (ConfigBurnList.getInvalidEntries().size() > 0)
+			joinEvent.player.sendMessage(new TextComponentTranslation("survivaltweaks.invalid.dim", ConfigBurnList.getInvalidEntries().toString()));
 	}
 
 	public static boolean spawnLava()

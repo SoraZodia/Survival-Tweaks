@@ -1,4 +1,5 @@
 survivaltweaks.invalid.potion=The following potion IDs is invalid: %s
+survivaltweaks.invalid.dim=The following dimension IDs is invalid: %s
 
 survivaltweaks.invalid.argument=Invalid Arguments
 survivaltweaks.invalid.dimension=Invaild ID or Dimension don't exist

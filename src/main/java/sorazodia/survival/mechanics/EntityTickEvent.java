@@ -10,6 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import sorazodia.survival.config.ConfigBurnList;
 import sorazodia.survival.config.ConfigHandler;
 
 public class EntityTickEvent
@@ -86,7 +87,7 @@ public class EntityTickEvent
 
 	private void burnPlayer(EntityLivingBase entity)
 	{
-		if (entity.dimension == -1 && entity.ticksExisted % 50 == 0 && !entity.isAirBorne)
+		if (ConfigBurnList.contains(entity.dimension) && entity.ticksExisted % 50 == 0 && !entity.isAirBorne)
 		{
 			World world = entity.world;
 			BlockPos entityPos = entity.getPosition();

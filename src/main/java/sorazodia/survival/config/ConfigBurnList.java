@@ -7,7 +7,7 @@ import sorazodia.survival.main.SurvivalTweaks;
 
 public class ConfigBurnList
 {
-	private static String[] idList = {};
+	private static String[] idList = {"-1"};
 	private static ArrayList<Integer>  dimensionList = new ArrayList<>(); 
 	private static ArrayList<String> invalidEntry = new ArrayList<>();
 	
@@ -18,10 +18,14 @@ public class ConfigBurnList
 			if (SurvivalTweaks.isInteger(str)) {
 				dimensionList.add(Integer.parseInt(str));
 			}
-			else {
+			else if (!invalidEntry.contains(str)){
 				invalidEntry.add(str);
 			}
 		}
+	}
+	
+	public static boolean contains(int id) {
+		return dimensionList.contains(id);
 	}
 	
 	public static ArrayList<String> getInvalidEntries() 
