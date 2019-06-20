@@ -37,7 +37,7 @@ public class BlockBreakEvent
 		}
 
 		World world = breakEvent.getWorld();
-		boolean hasSilkTouch = player.getHeldItem(player.getActiveHand()) != null && (EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, player.getHeldItem(player.getActiveHand())) > 0);
+		boolean hasSilkTouch = player.getActiveHand() != null && player.getHeldItem(player.getActiveHand()) != null && (EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, player.getHeldItem(player.getActiveHand())) > 0);
 		
 		if (!hasSilkTouch)
 		{
