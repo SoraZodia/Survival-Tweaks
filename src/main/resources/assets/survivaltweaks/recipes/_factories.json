@@ -1,0 +1,5 @@
+{
+    "conditions": {
+        "use_recipe": "sorazodia.survival.main.RecipeManager"
+    }
+}

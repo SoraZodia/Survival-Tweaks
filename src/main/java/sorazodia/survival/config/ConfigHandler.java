@@ -41,6 +41,9 @@ public class ConfigHandler
 	private static boolean netherBlockEffect = true;
 	private static boolean burn = false;
 	
+	//recipes
+	private static boolean useChainmail = true;
+	
 	//others
 	//Holds the base and multiplier for block effects.
 	/**
@@ -85,6 +88,8 @@ public class ConfigHandler
 		
 		blockEffectValue[2] = configFile.getFloat("Nether Wart Damage Base", Configuration.CATEGORY_GENERAL, 1, 0, Float.MAX_VALUE, "Starting value for the damage caused by breaking Nether Warts");
 		blockEffectValue[3] = configFile.getFloat("Nether Wart Damage Multiplier", Configuration.CATEGORY_GENERAL, 2, 0, Float.MAX_VALUE, "Starting at normal difficulty, how much to multiply the base value by");
+		
+		useChainmail = configFile.getBoolean("Enable Chainmail Recipe", Configuration.CATEGORY_GENERAL, true, "Add Chainmail recipes, reqiures MC to restart");
 		
 		if (configFile.hasChanged())
 			configFile.save();
@@ -139,6 +144,10 @@ public class ConfigHandler
 	public static boolean doBurn()
 	{
 		return burn;
+	}
+	
+	public static boolean enableChainmail() {
+		return useChainmail;
 	}
 
 	public static boolean doPearlEndDamage()

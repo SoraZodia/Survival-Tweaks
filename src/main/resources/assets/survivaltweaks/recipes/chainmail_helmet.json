@@ -12,5 +12,11 @@
 		"type": "forge:ore_dict",
         "ore": "ingotIron"
     }
-  }
+  },
+  "conditions": [
+	{
+		"type":"survivalTweaks:use_recipe",
+		"id": "chainmail"
+	}
+  ]
 }
