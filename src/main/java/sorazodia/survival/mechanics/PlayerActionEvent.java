@@ -1,11 +1,17 @@
 package sorazodia.survival.mechanics;
 
-import static net.minecraftforge.fml.common.eventhandler.Event.Result.*;
+import static net.minecraftforge.fml.common.eventhandler.Event.Result.DENY;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.Level;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
+import net.minecraft.block.BlockLever;
+import net.minecraft.block.BlockLever.EnumOrientation;
+import net.minecraft.block.BlockTorch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -36,9 +42,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBloc
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
-
-import org.apache.logging.log4j.Level;
-
 import sorazodia.survival.config.ConfigHandler;
 import sorazodia.survival.main.SurvivalTweaks;
 import sorazodia.survival.mechanics.trackers.BlackListTracker;
@@ -121,10 +124,10 @@ public class PlayerActionEvent
 	{
 		Item heldItem = event.getItemStack().getItem();
 		World world = event.getWorld();
-
+		
 		if (whitelist.isValid(heldItem) || (!blacklist.isValid(heldItem)) && (heldItem instanceof ItemTool))
 		{
-			if (!world.isRemote && ConfigHandler.doToolBlockPlace() && !event.getItemStack().isEmpty() && event.getFace() != null && event.getUseItem() != DENY)
+			if (ConfigHandler.doToolBlockPlace() && !event.getItemStack().isEmpty() && event.getFace() != null && event.getUseItem() != DENY)
 			{
 				EntityPlayer player = event.getEntityPlayer();
 				ItemStack heldStack = event.getItemStack();
@@ -135,7 +138,10 @@ public class PlayerActionEvent
 				if(!player.isSneaking() && blockState.getBlock().hasTileEntity(blockState))
 					return;
 				
-				if (!player.isSneaking() && !activationMap.containsKey(blockState.getBlock().getUnlocalizedName()))
+				// Assumes if a block has onBlockActivated, then it has some sort of behavior that happens at right click and should not tigger the block place
+				// Unless the block in question is a instance of the Block class, then it assume that there is no behavior at right click
+				
+				if (!player.isSneaking() && !blockState.getBlock().getClass().equals(Block.class) && !activationMap.containsKey(blockState.getBlock().getUnlocalizedName()))
 				{
 					Class<? extends Block> blockClass = blockState.getBlock().getClass();
 					Method methods[] = blockClass.getDeclaredMethods();
@@ -152,12 +158,12 @@ public class PlayerActionEvent
 					}
 				}
 				
-				if(player.isSneaking() || activationMap.get(blockState.getBlock().getUnlocalizedName()).booleanValue() == true)
+				if(player.isSneaking() || blockState.getBlock().getClass().equals(Block.class) || activationMap.get(blockState.getBlock().getUnlocalizedName()).booleanValue() == true) 
 					this.placeBlocks(world, player, blockState, blockState.getBlock(), heldStack, event.getPos(), offset, hand);
 				
 			}
 		}
-
+		
 	}
 
 	public void placeBlocks(World world, EntityPlayer player, IBlockState blockState, Block targetBlock, ItemStack heldStack, BlockPos pos, EnumFacing offset, EnumHand activeHand)
@@ -192,8 +198,13 @@ public class PlayerActionEvent
 					|| (toPlace.getHasSubtypes() && targetBlock.getHarvestTool(blockState) == null);
 
 			@SuppressWarnings("deprecation")
-			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateFromMeta(toPlace.getMetadata());
-
+			IBlockState heldBlock = Block.getBlockFromItem(toPlace.getItem()).getStateForPlacement(world, pos, offset, offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ(), toPlace.getMetadata(), player);
+			
+			// special cases
+			if (heldBlock.getBlock() instanceof BlockTorch) heldBlock = heldBlock.withProperty(BlockTorch.FACING, offset);
+			else if (heldBlock.getBlock() instanceof BlockLever) heldBlock = heldBlock.withProperty(BlockLever.FACING, EnumOrientation.forFacings(offset, player.getHorizontalFacing()));
+			else if (heldBlock.getBlock() instanceof BlockChest) heldBlock = heldBlock.withProperty(BlockChest.FACING, player.getHorizontalFacing().getOpposite());
+			
 			SoundEvent sound = heldBlock.getBlock().getSoundType(heldBlock, world, pos, player).getPlaceSound();
 
 			if (player.isSneaking() && canHarvest)
@@ -217,7 +228,7 @@ public class PlayerActionEvent
 			else
 			{
 				pos = pos.add(offset.getFrontOffsetX(), offset.getFrontOffsetY(), offset.getFrontOffsetZ());
-
+				
 				if (world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1)).size() == 0 && heldBlock.getBlock().canPlaceBlockAt(world, pos))
 				{
 					SurvivalTweaks.playSound(sound, SoundCategory.BLOCKS, world, player, true);

@@ -66,11 +66,9 @@ public class BlockBreakEvent
 					{
 					case NORMAL:
 						duration *= values[1];
-						System.out.print(duration);
 						break;
 					case HARD:
 						duration *= Math.pow(values[1], 2);
-						System.out.print(duration);
 						break;
 					default:
 						break;

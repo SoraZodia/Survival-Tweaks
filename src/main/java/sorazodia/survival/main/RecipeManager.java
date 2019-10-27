@@ -15,7 +15,6 @@ public class RecipeManager implements IConditionFactory
 	public BooleanSupplier parse(JsonContext context, JsonObject json)
 	{	
 		if (json.has(ID_KEY) && json.get(ID_KEY).getAsString().toLowerCase().equals("chainmail")) {
-			System.out.println(ConfigHandler.enableChainmail());
 			return () -> ConfigHandler.enableChainmail();
 		}
 		
