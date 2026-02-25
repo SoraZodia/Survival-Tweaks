@@ -43,6 +43,7 @@ public class ConfigHandler
 	
 	//recipes
 	private static boolean useChainmail = true;
+	private static boolean enableParachute = true;
 	
 	//others
 	//Holds the base and multiplier for block effects.
@@ -52,7 +53,7 @@ public class ConfigHandler
 	 * Nether Wart : 2, 3
 	 */
 	public static float blockEffectValue[] = {50, 2.3F, 1, 2};
-	
+
 	public ConfigHandler(FMLPreInitializationEvent event)
 	{
 		configFile = new Configuration(event.getSuggestedConfigurationFile());
@@ -88,9 +89,10 @@ public class ConfigHandler
 		
 		blockEffectValue[2] = configFile.getFloat("Nether Wart Damage Base", Configuration.CATEGORY_GENERAL, 1, 0, Float.MAX_VALUE, "Starting value for the damage caused by breaking Nether Warts");
 		blockEffectValue[3] = configFile.getFloat("Nether Wart Damage Multiplier", Configuration.CATEGORY_GENERAL, 2, 0, Float.MAX_VALUE, "Starting at normal difficulty, how much to multiply the base value by");
-		
+
 		useChainmail = configFile.getBoolean("Enable Chainmail Recipe", Configuration.CATEGORY_GENERAL, true, "Add Chainmail recipes, reqiures MC to restart");
-		
+		enableParachute = configFile.getBoolean("Enable Parachute", Configuration.CATEGORY_GENERAL, true, "Add the ability for Shields to reduce fall damage via right-clicking while falling. This can be configured, in a separate file, to allow other items to be used.");
+
 		if (configFile.hasChanged())
 			configFile.save();
 	}
@@ -221,4 +223,8 @@ public class ConfigHandler
 		return doCollision;
 	}
 
+	public static boolean enableParachute()
+	{
+		return enableParachute;
+	}
 }

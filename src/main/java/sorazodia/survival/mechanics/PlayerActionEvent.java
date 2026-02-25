@@ -84,7 +84,7 @@ public class PlayerActionEvent
 
 	public void softenFall(EntityPlayer player, ItemStack stack)
 	{
-		if (stack.getItem() instanceof ItemShield || SurvivalTweaks.getParachuteTracker().isValid(stack.getItem()))
+		if (ConfigHandler.enableParachute() && (stack.getItem() instanceof ItemShield || SurvivalTweaks.getParachuteTracker().isValid(stack.getItem())))
 		{
 			if (Math.abs(player.rotationPitch) == 90 && player.motionY <= -0.45)
 			{
